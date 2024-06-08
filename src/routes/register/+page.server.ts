@@ -18,7 +18,7 @@ export const actions = {
 				sameSite: 'strict',
 				maxAge: 3600
 			});
-			throw redirect(303, '/');
+			throw redirect(303, '/habit-tracker/dashboard');
 		} else {
 			const message = await response.json();
 			return fail(400, { error: message.error });
