@@ -6,9 +6,16 @@ export const load: PageServerLoad = async (event) => {
 	if (!sessionId) {
 		throw redirect(303, '/register');
 	}
-	const response = await fetch(`http://localhost:8080/user/${sessionId}`);
-	const user = await response.json();
+	const userResponse = await fetch(`http://localhost:8080/user/${sessionId}`);
+	const user = await userResponse.json();
+	const activityPointsResponse = await fetch('http:localhost:8080/dailyactivitypoints', {
+		headers: {
+			Authorization: `Apikey ${sessionId}`
+		}
+	});
+	const activityPoints = await activityPointsResponse.json();
 	return {
-		user
+		user,
+		activityPoints
 	};
 };

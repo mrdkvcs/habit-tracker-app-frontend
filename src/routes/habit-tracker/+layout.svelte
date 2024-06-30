@@ -6,7 +6,7 @@
 	import Icon from '@iconify/svelte';
 	let formattedDate = '';
 	export let data;
-	const { user } = data;
+	const { user, activityPoints } = data;
 	onMount(() => {
 		const date = new Date();
 		formattedDate = date
@@ -38,7 +38,7 @@
 	<Card.Header class="flex flex-col gap-4">
 		<h1 class="text-2xl font-bold text-center">Hey welcome , {user.username}</h1>
 		<h2 class="text-xl">Day today : {formattedDate}</h2>
-		<p class="text-sm text-gray-500">Total productivity points for today: 120</p>
+		<p class="text-sm text-gray-500">Total productivity points for today: {activityPoints}</p>
 	</Card.Header>
 	<Card.Content>
 		<slot />

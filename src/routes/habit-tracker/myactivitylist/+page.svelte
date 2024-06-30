@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	interface Activity {
+		activity_id: string;
 		name: string;
 		points: number;
 		type: string;
@@ -12,13 +12,21 @@
 		activities: Activity[];
 	}
 	export let data: PageData;
+	export let form;
 	const { activities } = data;
 </script>
 
 <h1 class="text-xl font-bold mb-5">My activity list</h1>
+{#if form}
+	{#if form.error}
+		<p class="text-red-500 my-2">{form.error}></p>
+	{:else}
+		<p class="text-green-500 my-2">{form.success}</p>
+	{/if}
+{/if}
 <div class="flex flex-col gap-2">
 	{#each activities as activity}
-		<div class="flex gap-2 items-center">
+		<div class="flex gap-2 items-center mt-2">
 			<h2 class="text-blue-500 text-lg">{activity.name}</h2>
 			{#if activity.points > 0}
 				<h2 class="text-green-500">{activity.points}</h2>
@@ -27,6 +35,12 @@
 			{/if}
 			{#if activity.type === 'default'}
 				<p class="text-gray-400">default</p>
+			{/if}
+			{#if activity.type === 'custom'}
+				<form method="POST" action="?/removeactivity">
+					<input type="hidden" name="activityid" value={activity.activity_id} />
+					<button class="text-red-500 bg-none ml-2" type="submit">Remove activity</button>
+				</form>
 			{/if}
 		</div>
 	{/each}

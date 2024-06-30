@@ -5,4 +5,5 @@
 	<a href="/habit-tracker/dailyactivitylist" class="text-blue-500 text-xl"
 		>View Daily Activity List</a
 	>
+	<a href="/habit-tracker/datainsights" class="text-blue-500 text-xl">Data insights</a>
 </div>
