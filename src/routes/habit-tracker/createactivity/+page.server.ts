@@ -3,11 +3,13 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const sessionId = event.cookies.get('sessionId');
+
 	const response = await fetch('http://localhost:8080/activities', {
 		headers: {
 			Authorization: `Apikey ${sessionId}`
 		}
 	});
+
 	if (response.ok) {
 		const activities = await response.json();
 		return {
