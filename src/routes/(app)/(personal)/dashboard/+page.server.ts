@@ -1,4 +1,22 @@
 import { redirect } from '@sveltejs/kit';
+export const load = async (event) => {
+	const sessionId = event.cookies.get('sessionId');
+	const dailyPointsResponse = await fetch('http:localhost:8080/dailypoints', {
+		headers: {
+			Authorization: `Apikey ${sessionId}`
+		}
+	});
+	if (dailyPointsResponse.ok) {
+		const dailyPoints = await dailyPointsResponse.json();
+		return {
+			dailyPoints
+		};
+	} else {
+		return {
+			error: 'Could not get daily points at the moment'
+		};
+	}
+};
 export const actions = {
 	signout: async (event) => {
 		event.cookies.set('sessionId', '', {

@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from '../../habit-tracker/createactivity/$types';
 
 export const load: PageServerLoad = async (event) => {
 	const sessionId = event.cookies.get('sessionId');

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
-  import * as Card from '$lib/components/ui/card';
+	import * as Card from '$lib/components/ui/card';
 	let start_time: Date;
 	let end_time: Date;
 	let defaultperiod: boolean = true;
@@ -54,9 +54,9 @@
 		}
 	}
 	async function handleSubmit() {
-	 start_time = new Date(start_time);
+		start_time = new Date(start_time);
 		end_time = new Date(end_time);
-    end_time.setDate(end_time.getDate() + 1);
+		end_time.setDate(end_time.getDate() + 1);
 		const response = await fetch('http://localhost:8080/productivitystats', {
 			method: 'POST',
 			headers: {
@@ -67,8 +67,8 @@
 		if (response.ok) {
 			const productivityStatsResponse = await response.json();
 			productivityStats = productivityStatsResponse;
-      console.log(productivityStats);
-      end_time.setDate(end_time.getDate() - 1);
+			console.log(productivityStats);
+			end_time.setDate(end_time.getDate() - 1);
 		} else {
 			const errorMessage = await response.json();
 			productivityError = `Could not get productivity stats at the moment, Please try again later
@@ -78,7 +78,7 @@ error : ${errorMessage.error}
 	}
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Data insights</h1>
+<h1 class="text-2xl text-center font-bold mb-4">Data insights</h1>
 
 {#if productivityError}
 	<p>{productivityError}</p>
@@ -86,47 +86,49 @@ error : ${errorMessage.error}
 
 {#if productivityStats}
 	<h1 class="text-2xl font-bold text-center">Productivity stats</h1>
-<Card.Root class="w-[650px] h-[450px] mx-auto mt-5">
-  <Card.Header>
-      <div class="flex gap-2 items-center justify-center">
-       <p class="text-lg text-gray-500">{start_time.toLocaleString()}</p>  
-       <p class="text-lg text-gray-500">-</p> 
-       <p class="text-lg text-gray-500">{end_time.toLocaleString()}</p> 
-      </div>
-  </Card.Header>
-  <Card.Content>
-    <form>
-      <div class="grid w-full items-center gap-4">
-        <div class="flex flex-col space-y-1.5">
-            <h2 class="text-lg font-bold">Total productivity points over the time period:</h2>
-            <p class="text-gray-500">{productivityStats.productivity_points.total_points}</p>
-        </div>
-        <div class="flex flex-col space-y-1.5">
-            <h2 class="text-lg font-bold">Average productivity points over the time period:</h2>
-            <p class="text-gray-500">{productivityStats.productivity_points.average_points}</p>
-        </div>
-        <div class="flex flex-col space-y-1.5">
-          <h2 class="text-lg font-bold">Your best productivity day:</h2>
-            <div class="flex  gap-2">
-              <p class="text-gray-500">{new Date(productivityStats.best_productivity_day.date).toISOString().split('T')[0]}</p>
-              <p class="text-gray-500">{productivityStats.best_productivity_day.total_points} points</p>
-            </div>
-        </div>
-        <div class="flex flex-col space-y-1.5">
-            <h2 class="text-lg font-bold">Your  productivity days:</h2>
-            {#each productivityStats.productivity_days as productivityDay}
-               <div class="flex  gap-2">
-                <p class="text-gray-500">{new Date(productivityDay.date).toISOString().split('T')[0]}</p>
-                <p class="text-gray-500">{productivityDay.total_points} points</p>
-              </div>
-            {/each}
-        </div>
-      </div>
-    </form>
-  </Card.Content>
-  <Card.Footer class="flex justify-between">
-  </Card.Footer>
-</Card.Root>
+	<Card.Header>
+		<div class="flex gap-2 items-center justify-center">
+			<p class="text-lg text-gray-500">{start_time.toLocaleString()}</p>
+			<p class="text-lg text-gray-500">-</p>
+			<p class="text-lg text-gray-500">{end_time.toLocaleString()}</p>
+		</div>
+	</Card.Header>
+	<Card.Content>
+		<form>
+			<div class="grid w-full items-center gap-4">
+				<div class="flex flex-col space-y-1.5">
+					<h2 class="text-lg font-bold">Total productivity points over the time period:</h2>
+					<p class="text-gray-500">{productivityStats.productivity_points.total_points}</p>
+				</div>
+				<div class="flex flex-col space-y-1.5">
+					<h2 class="text-lg font-bold">Average productivity points over the time period:</h2>
+					<p class="text-gray-500">{productivityStats.productivity_points.average_points}</p>
+				</div>
+				<div class="flex flex-col space-y-1.5">
+					<h2 class="text-lg font-bold">Your best productivity day:</h2>
+					<div class="flex gap-2">
+						<p class="text-gray-500">
+							{new Date(productivityStats.best_productivity_day.date).toISOString().split('T')[0]}
+						</p>
+						<p class="text-gray-500">
+							{productivityStats.best_productivity_day.total_points} points
+						</p>
+					</div>
+				</div>
+				<div class="flex flex-col space-y-1.5">
+					<h2 class="text-lg font-bold">Your productivity days:</h2>
+					{#each productivityStats.productivity_days as productivityDay}
+						<div class="flex gap-2">
+							<p class="text-gray-500">
+								{new Date(productivityDay.date).toISOString().split('T')[0]}
+							</p>
+							<p class="text-gray-500">{productivityDay.total_points} points</p>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</form>
+	</Card.Content>
 {:else if defaultperiod}
 	<form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-2">
 		<h2 class="text-lg font-bold text-center">
