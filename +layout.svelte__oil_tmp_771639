@@ -1,0 +1,23 @@
+<script lang="ts">
+	import { Button } from '$lib/components/ui/button';
+	import * as Avatar from '$lib/components/ui/avatar';
+</script>
+
+<header class="bg-gray-50 px-8 py-4 shadow-sm w-full">
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="text-4xl font-bold">The Ultimate Habit Tracker</h1>
+			<p class="text-sm italic text-gray-500">The app you need to enhance your productivity</p>
+		</div>
+		<form method="POST" class="flex gap-3" action="?/signout">
+			<Avatar.Root>
+				<Avatar.Image src="https://github.com/shadcn.png" alt="@shadcn" />
+			</Avatar.Root>
+			<Button type="submit" class="bg-blue-500 p-5 mr-5">Sign out</Button>
+		</form>
+	</div>
+</header>
+
+<main class="pt-8">
+	<slot />
+</main>
