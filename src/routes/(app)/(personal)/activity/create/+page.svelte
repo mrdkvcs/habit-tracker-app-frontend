@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
+	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
-	const { user } = data;
 	let dialog: HTMLDialogElement = $state();
 	let successMessage: string = $state('');
 	let errorMessage: string = $state('');
@@ -27,11 +25,13 @@
 	}
 
 	interface Props {
-		data: any;
+		data: PageData;
 		form: Form;
 	}
 
 	let { data, form }: Props = $props();
+	const { user } = data;
+
 	async function setActivityLog() {
 		errorMessage = '';
 		successMessage = '';

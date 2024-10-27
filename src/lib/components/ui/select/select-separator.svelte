@@ -4,13 +4,8 @@
 
 	type $$Props = SelectPrimitive.SeparatorProps;
 
-	interface Props {
-		class?: $$Props["class"];
-		[key: string]: any
-	}
-
-	let { class: className = undefined, ...rest }: Props = $props();
-	
+	let className: $$Props["class"] = undefined;
+	export { className as class };
 </script>
 
-<SelectPrimitive.Separator class={cn("-mx-1 my-1 h-px bg-muted", className)} {...rest} />
+<SelectPrimitive.Separator class={cn("bg-muted -mx-1 my-1 h-px", className)} {...$$restProps} />
