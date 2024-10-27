@@ -18,14 +18,17 @@
 	let { data, form } = $props();
 
 	let { activities, user } = $state(data);
+
 	function setActivityName(e: Event) {
 		const target = e.target as HTMLInputElement;
 		activityNameInput.value = target.value;
 	}
+
 	function setActivityPoints(e: Event) {
 		const target = e.target as HTMLInputElement;
 		activityPointsInput.value = target.value;
 	}
+
 	async function checkActivityLogExists(activity_id: string) {
 		errorMessage = '';
 		successMessage = '';
@@ -51,6 +54,7 @@
 
 		removeActivity(activity_id);
 	}
+
 	async function removeActivity(activity_id: string) {
 		errorMessage = '';
 		successMessage = '';

@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
-	import type { SubmitFunction } from '@sveltejs/kit';
 	let dialog: HTMLDialogElement = $state();
 	let successMessage: string = $state('');
 	let errorMessage: string = $state('');

@@ -4,10 +4,10 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	let start_time: Date = $state();
-	let end_time: Date = $state();
+	let start_time: Date = $state(new Date());
+	let end_time: Date = $state(new Date());
 	let defaultperiod: boolean = $state(true);
-	let productivityError: string = $state();
+	let productivityError: string = $state('');
 	let { data } = $props();
 	interface DailyProductivity {
 		date: Date;
@@ -19,7 +19,11 @@
 		best_productivity_day: DailyProductivity;
 		productivity_days: DailyProductivity[];
 	}
-	let productivityStats: ProductivityStats = $state();
+	let productivityStats: ProductivityStats = $state({
+		productivity_points: { total_points: 0, average_points: 0 },
+		best_productivity_day: { date: new Date(), total_points: 0 },
+		productivity_days: []
+	});
 	function handleSelectChange(selectvalue: { value: string; label: string; disabled: boolean }) {
 		let timePeriod = selectvalue.value;
 		switch (timePeriod) {
@@ -55,7 +59,8 @@
 				break;
 		}
 	}
-	async function handleSubmit() {
+	async function handleSubmit(e: Event) {
+		e.preventDefault();
 		start_time = new Date(start_time);
 		end_time = new Date(end_time);
 		end_time.setDate(end_time.getDate() + 1);
@@ -69,7 +74,6 @@
 		if (response.ok) {
 			const productivityStatsResponse = await response.json();
 			productivityStats = productivityStatsResponse;
-			console.log(productivityStats);
 			end_time.setDate(end_time.getDate() - 1);
 		} else {
 			const errorMessage = await response.json();
@@ -132,7 +136,7 @@ error : ${errorMessage.error}
 		</form>
 	</Card.Content>
 {:else if defaultperiod}
-	<form onsubmit={preventDefault(handleSubmit)} class="flex flex-col gap-2">
+	<form onsubmit={handleSubmit} class="flex flex-col gap-2">
 		<h2 class="text-lg font-bold text-center">
 			Tell us in what period you want to see your productivity in
 		</h2>
@@ -159,7 +163,7 @@ error : ${errorMessage.error}
 		<Button type="submit" class="bg-blue-500 mx-auto mt-5">Give me the report</Button>
 	</form>
 {:else}
-	<form onsubmit={preventDefault(handleSubmit)} class="flex flex-col gap-2 justify-center">
+	<form onsubmit={handleSubmit} class="flex flex-col gap-2 justify-center">
 		<h1 class="text-2xl font-bold text-center mb-5 text-blue-500">Set your custom time period</h1>
 		<Button
 			class="bg-white-500 text-blue-500 text-lg  mx-auto mt-2"
