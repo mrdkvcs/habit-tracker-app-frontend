@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	let dialog: HTMLDialogElement = $state();
 	let successMessage: string = $state('');
 	let errorMessage: string = $state('');
@@ -32,7 +33,8 @@
 	let { data, form }: Props = $props();
 	const { user } = data;
 
-	async function setActivityLog() {
+	async function setActivityLog(event: Event) {
+		event.preventDefault();
 		errorMessage = '';
 		successMessage = '';
 		const response = await fetch('http://localhost:8080/activities/logs', {
@@ -125,7 +127,7 @@
 		</p>
 		<a class="text-blue-500 underline" href="/activities">activity list</a>
 	</div>
-	<form onsubmit={preventDefault(setActivityLog)} method="POST" class="flex flex-col">
+	<form onsubmit={setActivityLog} method="POST" class="flex flex-col">
 		<input
 			type="text"
 			autocomplete="off"
