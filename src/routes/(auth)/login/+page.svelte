@@ -3,7 +3,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
-	export let form;
+	let { form } = $props();
 </script>
 
 <Card.Root class="w-[350px] mx-auto my-40 ">

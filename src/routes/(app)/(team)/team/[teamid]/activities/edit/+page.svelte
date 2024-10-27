@@ -9,10 +9,14 @@
 		error: string;
 		success: string;
 	}
-	export let data: PageData;
-	export let form: Form;
+	interface Props {
+		data: PageData;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	const { teamActivities, teamRoles } = data;
-	let selectedTeamRoles: string[] = [];
+	let selectedTeamRoles: string[] = $state([]);
 	function addRole(role: string) {
 		selectedTeamRoles = [...selectedTeamRoles, role];
 	}

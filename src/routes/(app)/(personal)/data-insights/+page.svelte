@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	let start_time: Date;
-	let end_time: Date;
-	let defaultperiod: boolean = true;
-	let productivityError: string;
-	export let data;
+	let start_time: Date = $state();
+	let end_time: Date = $state();
+	let defaultperiod: boolean = $state(true);
+	let productivityError: string = $state();
+	let { data } = $props();
 	interface DailyProductivity {
 		date: Date;
 		total_points: number;
@@ -17,7 +19,7 @@
 		best_productivity_day: DailyProductivity;
 		productivity_days: DailyProductivity[];
 	}
-	let productivityStats: ProductivityStats;
+	let productivityStats: ProductivityStats = $state();
 	function handleSelectChange(selectvalue: { value: string; label: string; disabled: boolean }) {
 		let timePeriod = selectvalue.value;
 		switch (timePeriod) {
@@ -130,7 +132,7 @@ error : ${errorMessage.error}
 		</form>
 	</Card.Content>
 {:else if defaultperiod}
-	<form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-2">
+	<form onsubmit={preventDefault(handleSubmit)} class="flex flex-col gap-2">
 		<h2 class="text-lg font-bold text-center">
 			Tell us in what period you want to see your productivity in
 		</h2>
@@ -157,7 +159,7 @@ error : ${errorMessage.error}
 		<Button type="submit" class="bg-blue-500 mx-auto mt-5">Give me the report</Button>
 	</form>
 {:else}
-	<form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-2 justify-center">
+	<form onsubmit={preventDefault(handleSubmit)} class="flex flex-col gap-2 justify-center">
 		<h1 class="text-2xl font-bold text-center mb-5 text-blue-500">Set your custom time period</h1>
 		<Button
 			class="bg-white-500 text-blue-500 text-lg  mx-auto mt-2"

@@ -1,12 +1,13 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card';
-	export let data;
 	const { user } = data;
-	let dialog: HTMLDialogElement;
-	let successMessage: string = '';
-	let errorMessage: string = '';
-	let matchedActivities: MatchedActivity;
+	let dialog: HTMLDialogElement = $state();
+	let successMessage: string = $state('');
+	let errorMessage: string = $state('');
+	let matchedActivities: MatchedActivity = $state();
 	interface MatchedActivity {
 		matched_activities: Activity[];
 		duration: number;
@@ -25,7 +26,12 @@
 		error: string;
 	}
 
-	export let form: Form;
+	interface Props {
+		data: any;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	async function setActivityLog() {
 		errorMessage = '';
 		successMessage = '';
@@ -52,7 +58,7 @@
 		}
 	}
 
-	let activityInput: string = '';
+	let activityInput: string = $state('');
 </script>
 
 {#if form}
@@ -108,7 +114,7 @@
 						</form>
 					</div>
 				{/each}
-				<button on:click={() => dialog.close()} class="text-red-500 text-left mt-2">Cancel</button>
+				<button onclick={() => dialog.close()} class="text-red-500 text-left mt-2">Cancel</button>
 			</div>
 		{/if}
 	</dialog>
@@ -119,7 +125,7 @@
 		</p>
 		<a class="text-blue-500 underline" href="/activities">activity list</a>
 	</div>
-	<form on:submit|preventDefault={setActivityLog} method="POST" class="flex flex-col">
+	<form onsubmit={preventDefault(setActivityLog)} method="POST" class="flex flex-col">
 		<input
 			type="text"
 			autocomplete="off"

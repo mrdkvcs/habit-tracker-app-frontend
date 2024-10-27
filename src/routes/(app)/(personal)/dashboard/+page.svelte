@@ -5,8 +5,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Progress } from '$lib/components/ui/progress';
-	let formattedDate = '';
-	export let data;
+	let formattedDate = $state('');
+	let { data } = $props();
 	const { user, dailyPoints } = data;
 	onMount(() => {
 		const date = new Date();

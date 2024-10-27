@@ -3,22 +3,21 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card';
-	let dialog: HTMLDialogElement;
-	let activityNameInput: HTMLInputElement;
-	let activityPointsInput: HTMLInputElement;
-	let successMessage: string = '';
-	let errorMessage: string = '';
-	let selectedActivityId: string = '';
+	let dialog: HTMLDialogElement = $state();
+	let activityNameInput: HTMLInputElement = $state();
+	let activityPointsInput: HTMLInputElement = $state();
+	let successMessage: string = $state('');
+	let errorMessage: string = $state('');
+	let selectedActivityId: string = $state('');
 	interface Activity {
 		activity_id: string;
 		name: string;
 		points: number;
 		type: string;
 	}
-	export let data;
-	export let form;
+	let { data, form } = $props();
 
-	let { activities, user } = data;
+	let { activities, user } = $state(data);
 	function setActivityName(e: Event) {
 		const target = e.target as HTMLInputElement;
 		activityNameInput.value = target.value;
@@ -105,14 +104,14 @@
 				</p>
 				<div class="flex gap-5 items-center mt-5">
 					<button
-						on:click={() => {
+						onclick={() => {
 							removeActivity(selectedActivityId);
 							dialog.close();
 							selectedActivityId = '';
 						}}
 						class="bg-blue-500 w-[100px] text-white p-1 rounded">Yes</button
 					>
-					<button on:click={() => dialog.close()} class="text-red-500 bg-none">Cancel</button>
+					<button onclick={() => dialog.close()} class="text-red-500 bg-none">Cancel</button>
 				</div>
 			</dialog>
 			<div class="flex gap-2 items-center mt-2">
@@ -138,7 +137,7 @@
 									<input
 										value={activity.name}
 										bind:this={activityNameInput}
-										on:input={setActivityName}
+										oninput={setActivityName}
 										id="activityname"
 										required
 										name="activityname"
@@ -153,7 +152,7 @@
 										required
 										placeholder="(Max 10 , Min -10)"
 										value={activity.points}
-										on:input={setActivityPoints}
+										oninput={setActivityPoints}
 										bind:this={activityPointsInput}
 										type="number"
 										max="10"
@@ -174,7 +173,7 @@
 					</Dialog.Content>
 				</Dialog.Root>
 				<button
-					on:click={() => checkActivityLogExists(activity.activity_id)}
+					onclick={() => checkActivityLogExists(activity.activity_id)}
 					class="bg-none text-red-500">Remove</button
 				>
 			</div>

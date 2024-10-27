@@ -4,13 +4,17 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import type { PageData } from './$types';
-	export let data: PageData;
 	interface Form {
 		error: string;
 		success: string;
 	}
 	const { teamRoles } = data;
-	export let form: Form;
+	interface Props {
+		data: PageData;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 </script>
 
 <Card.Header class="flex flex-col gap-4">

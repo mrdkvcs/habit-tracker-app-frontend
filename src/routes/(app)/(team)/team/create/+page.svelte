@@ -6,9 +6,9 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { enhance } from '$app/forms';
-	export let form;
-	let industry: string;
-	let isPrivate: boolean;
+	let { form } = $props();
+	let industry: string = $state();
+	let isPrivate: boolean = $state();
 	const industries = [
 		{ value: 'finance', label: 'Finance' },
 		{ value: 'tech', label: 'Tech' },

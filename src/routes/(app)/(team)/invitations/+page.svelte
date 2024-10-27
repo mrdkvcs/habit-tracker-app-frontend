@@ -3,8 +3,12 @@
 		error: string;
 		success: string;
 	}
-	export let data;
-	export let form: Form;
+	interface Props {
+		data: any;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	const { teamInvites } = data;
 </script>
 

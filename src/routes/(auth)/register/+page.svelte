@@ -4,8 +4,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Switch } from '$lib/components/ui/switch';
-	let setDefault = false;
-	export let form;
+	let setDefault = $state(false);
+	let { form } = $props();
 </script>
 
 <Card.Root class="w-[350px] mx-auto my-40">

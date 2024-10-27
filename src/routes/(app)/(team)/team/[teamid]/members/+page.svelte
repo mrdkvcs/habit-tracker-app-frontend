@@ -1,11 +1,10 @@
 <script lang="ts">
-	export let data;
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	const { members, teamid } = data;
-	let errorMessage: string = '';
+	let errorMessage: string = $state('');
 	interface Form {
 		error: string;
 		success: string;
@@ -14,9 +13,14 @@
 		id: string;
 		role_name: string;
 	}
-	export let form: Form;
-	let notAssignedRoles: Role[] = [];
-	let selectedRoles: string[] = [];
+	interface Props {
+		data: any;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
+	let notAssignedRoles: Role[] = $state([]);
+	let selectedRoles: string[] = $state([]);
 	async function getNotAssignedRoles(membership_id: string) {
 		const response = await fetch(`http://localhost:8080/teams/${teamid}/roles/${membership_id}`);
 		if (!response.ok) {

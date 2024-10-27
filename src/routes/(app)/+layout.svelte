@@ -2,9 +2,9 @@
 	import Icon from '@iconify/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { onMount } from 'svelte';
-	export let data;
-	let openUserMenu = false;
-	let notificationCount: number = 0;
+	let { data, children } = $props();
+	let openUserMenu = $state(false);
+	let notificationCount: number = $state(0);
 	const { user } = data;
 	const socket = new WebSocket(`http://localhost:8080/ws?userid=${user.id}`);
 	onMount(() => {
@@ -138,7 +138,7 @@
 								<a
 									href="/invitations"
 									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
-									on:click={() => (notificationCount = 0)}
+									onclick={() => (notificationCount = 0)}
 								>
 									<Icon icon="mingcute:invite-fill" width="24" height="24" style="color: white" />
 									Team Invitations
@@ -259,7 +259,7 @@
 					<div class="relative">
 						<button
 							type="button"
-							on:click={() => {
+							onclick={() => {
 								openUserMenu = !openUserMenu;
 							}}
 							class="-m-1.5 flex items-center p-1.5"
@@ -323,7 +323,7 @@
 
 		<main class="py-10">
 			<div class=" mt-24 px-4 sm:px-6 lg:px-8">
-				<slot />
+				{@render children?.()}
 			</div>
 		</main>
 	</div>

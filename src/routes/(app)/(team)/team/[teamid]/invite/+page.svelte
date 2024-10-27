@@ -1,17 +1,23 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
-	export let data: PageData;
-	let username: string = '';
-	let errorMessage: string = '';
-	let successMessage: string = '';
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
+	let username: string = $state('');
+	let errorMessage: string = $state('');
+	let successMessage: string = $state('');
 	interface User {
 		id: string;
 		username: string;
 		has_been_invited: boolean;
 		inviteToggled: boolean;
 	}
-	let searchedUsers: User[] = [];
+	let searchedUsers: User[] = $state([]);
 	const { user, teamid, sessionId } = data;
 	async function handleUserSearch() {
 		if (username.trim().length > 0) {
@@ -67,7 +73,7 @@
 	<input
 		class="w-96 text-center text-lg border-blue-500 border-2 rounded-md"
 		type="text"
-		on:input={handleUserSearch}
+		oninput={handleUserSearch}
 		bind:value={username}
 		placeholder="Search users..."
 	/>
@@ -75,7 +81,7 @@
 <div class="flex flex-col gap-2 mt-5">
 	{#each searchedUsers as searchedUser}
 		<form
-			on:submit|preventDefault={() => inviteUser(searchedUser.id)}
+			onsubmit={preventDefault(() => inviteUser(searchedUser.id))}
 			class="flex items-center justify-center gap-2"
 		>
 			<h2 class="text-blue-500 text-center font-bold">{searchedUser.username}</h2>

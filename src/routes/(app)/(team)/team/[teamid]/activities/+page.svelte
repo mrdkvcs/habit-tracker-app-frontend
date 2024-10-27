@@ -13,8 +13,12 @@
 	interface Form {
 		error: string;
 	}
-	export let data: PageData;
-	export let form: Form;
+	interface Props {
+		data: PageData;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	const { userTeamActivities } = data;
 </script>
 

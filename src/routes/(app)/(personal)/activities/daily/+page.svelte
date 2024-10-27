@@ -1,10 +1,14 @@
 <script lang="ts">
-	export let data;
 	interface Form {
 		error: string;
 	}
-	export let form: Form;
 	import * as Card from '$lib/components/ui/card';
+	interface Props {
+		data: any;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	const { dailyActivityLogs } = data;
 </script>
 

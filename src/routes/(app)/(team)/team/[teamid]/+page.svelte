@@ -4,9 +4,13 @@
 	interface Form {
 		error: string;
 	}
-	export let data;
-	let formattedDate = ' ';
-	export let form: Form;
+	let formattedDate = $state(' ');
+	interface Props {
+		data: any;
+		form: Form;
+	}
+
+	let { data, form }: Props = $props();
 	const { team, user, ownership } = data;
 	onMount(() => {
 		const date = new Date();
