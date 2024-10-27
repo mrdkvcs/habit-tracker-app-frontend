@@ -50,9 +50,9 @@
 									id="goalpoints"
 									name="goalpoints"
 									required
-									placeholder="(Min 3000)"
+									placeholder="(Min 30)"
 									type="number"
-									min="3000"
+									min="30"
 									class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
