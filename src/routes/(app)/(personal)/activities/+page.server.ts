@@ -2,42 +2,34 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	const sessionId = event.cookies.get('sessionId');
-	const activitiesResponse = await fetch('http://localhost:8080/activities', {
-		headers: {
-			Authorization: `Apikey ${sessionId}`
-		}
-	});
+	const token = event.cookies.get('token');
+	const activitiesResponse = await event.fetch('http://localhost:8080/activities');
 	const activities = await activitiesResponse.json();
 	return {
-		activities
+		activities,
+		token
 	};
 };
 
 export const actions = {
-	addactivity: async ({ request, cookies }) => {
-		const sessionId = cookies.get('sessionId');
-		const formData = await request.formData();
+	addactivity: async (event) => {
+		const formData = await event.request.formData();
 		const name = formData.get('activityname');
 		const activitypoints = formData.get('activitypoints');
 		const points = +activitypoints;
-		const response = await fetch('http://localhost:8080/activities', {
+		const response = await event.fetch('http://localhost:8080/activities', {
 			method: 'POST',
-			body: JSON.stringify({ name, points }),
-			headers: {
-				Authorization: `Apikey ${sessionId}`
-			}
+			body: JSON.stringify({ name, points })
 		});
-		if (response.ok) {
-			return {
-				success: 'Activity added successfully'
-			};
-		} else {
+		if (!response.ok) {
 			const errorMessage = await response.json();
 			return fail(400, {
 				error: errorMessage.error
 			});
 		}
+		return {
+			success: 'Activity added successfully'
+		};
 	},
 	editActivity: async ({ request }) => {
 		const formData = await request.formData();

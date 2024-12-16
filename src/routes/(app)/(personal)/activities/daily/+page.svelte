@@ -3,8 +3,9 @@
 		error: string;
 	}
 	import * as Card from '$lib/components/ui/card';
+	import type { PageData } from './$types';
 	interface Props {
-		data: any;
+		data: PageData;
 		form: Form;
 	}
 
@@ -23,7 +24,11 @@
 		{#each dailyActivityLogs as dailyActivityLog}
 			<div class="flex flex-col gap-2">
 				<div class="flex gap-2 text-blue-500 mt-5">
-					<h2>{dailyActivityLog.name}</h2>
+					{#if dailyActivityLog.name}
+						<h2>{dailyActivityLog.name}</h2>
+					{:else}
+						<h2 class="text-gray-500">One time activity</h2>
+					{/if}
 					<p>{dailyActivityLog.points} points</p>
 					<p>
 						{Math.floor(dailyActivityLog.duration / 60)} hour(s) {dailyActivityLog.duration -

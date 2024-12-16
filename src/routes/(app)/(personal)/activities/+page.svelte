@@ -17,7 +17,7 @@
 	}
 	let { data, form } = $props();
 
-	let { activities, user } = $state(data);
+	let { activities, token } = $state(data);
 
 	function setActivityName(e: Event) {
 		const target = e.target as HTMLInputElement;
@@ -33,10 +33,10 @@
 		errorMessage = '';
 		successMessage = '';
 		const response = await fetch(
-			`http://localhost:8080/activities/logs/exist?activity_id=${activity_id}&user_id=${user.id}`,
+			`http://localhost:8080/activities/logs/exist?activity_id=${activity_id}`,
 			{
 				headers: {
-					Authorization: `Apikey ${user.api_key}`
+					Authorization: `Bearer ${token}`
 				}
 			}
 		);

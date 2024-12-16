@@ -1,8 +1,8 @@
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	const loggedIn = event.cookies.get('token') != '' && event.cookies.get('token') != undefined;
+	const token = event.cookies.get('token');
 	return {
-		loggedIn
+		token
 	};
 };

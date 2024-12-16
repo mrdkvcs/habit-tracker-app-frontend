@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import ProductivityChart from '$lib/components/ProductivityChart.svelte';
 	let start_time: Date = $state(new Date());
 	let end_time: Date = $state(new Date());
 	let defaultperiod: boolean = $state(true);
 	let productivityError: string = $state('');
-	let { data } = $props();
-	interface DailyProductivity {
+	let goalProductivityDaysNumber: number = $state(0);
+	let completedProductivityDaysNumber: number = $state(0);
+	let productivityStats = $state();
+	let productivityPoints: number[] = $state([]);
+	let labels: Date[] = $state([]);
+
+	interface ProductivityDay {
 		date: Date;
 		total_points: number;
+		status: string;
 	}
 
-	interface ProductivityStats {
-		productivity_points: { total_points: number; average_points: number };
-		best_productivity_day: DailyProductivity;
-		productivity_days: DailyProductivity[];
-	}
-	let productivityStats: ProductivityStats = $state({
-		productivity_points: { total_points: 0, average_points: 0 },
-		best_productivity_day: { date: new Date(), total_points: 0 },
-		productivity_days: []
-	});
+	let goalProductivityDays: ProductivityDay[] = $state([]);
+
+	let { data } = $props();
+	const { token } = data;
+
 	function handleSelectChange(selectvalue: { value: string; label: string; disabled: boolean }) {
 		let timePeriod = selectvalue.value;
 		switch (timePeriod) {
@@ -64,16 +64,39 @@
 		start_time = new Date(start_time);
 		end_time = new Date(end_time);
 		end_time.setDate(end_time.getDate() + 1);
+
 		const response = await fetch('http://localhost:8080/productivitystats', {
 			method: 'POST',
 			headers: {
-				Authorization: `Apikey ${data.user.api_key}`
+				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({ start_time: start_time, end_time: end_time })
 		});
+
 		if (response.ok) {
 			const productivityStatsResponse = await response.json();
+			if (productivityStatsResponse.length === 0) {
+				productivityError = 'There are no data available in the defined time period ';
+				return;
+			}
 			productivityStats = productivityStatsResponse;
+			goalProductivityDays = productivityStatsResponse.productivity_days.filter(
+				(day: { date: Date; total_points: number; status: string }) => day.status != 'no goal'
+			);
+			completedProductivityDaysNumber = productivityStatsResponse.productivity_days.filter(
+				(day: { date: Date; total_points: number; status: string }) => day.status == 'completed'
+			).length;
+			goalProductivityDaysNumber = productivityStatsResponse.productivity_days.filter(
+				(day: { date: Date; total_points: number; status: string }) => day.status != 'no goal'
+			).length;
+			labels = productivityStatsResponse.productivity_days.map(
+				(productivityDay: { date: Date; total_points: number; status: string }) =>
+					new Date(productivityDay.date).toISOString().split('T')[0]
+			);
+			productivityPoints = productivityStatsResponse.productivity_days.map(
+				(productivityDay: { date: Date; total_points: number; status: string }) =>
+					productivityDay.total_points
+			);
 			end_time.setDate(end_time.getDate() - 1);
 		} else {
 			const errorMessage = await response.json();
@@ -84,10 +107,8 @@ error : ${errorMessage.error}
 	}
 </script>
 
-<h1 class="text-2xl text-center font-bold mb-4">Data insights</h1>
-
 {#if productivityError}
-	<p>{productivityError}</p>
+	<p class="text-center text-red-500 mb-5">{productivityError}</p>
 {/if}
 
 {#if productivityStats}
@@ -99,7 +120,8 @@ error : ${errorMessage.error}
 			<p class="text-lg text-gray-500">{end_time.toLocaleString()}</p>
 		</div>
 	</Card.Header>
-	<Card.Content>
+	<ProductivityChart {labels} {productivityPoints} />
+	<Card.Content class="mt-5">
 		<form>
 			<div class="grid w-full items-center gap-4">
 				<div class="flex flex-col space-y-1.5">
@@ -122,20 +144,46 @@ error : ${errorMessage.error}
 					</div>
 				</div>
 				<div class="flex flex-col space-y-1.5">
-					<h2 class="text-lg font-bold">Your productivity days:</h2>
-					{#each productivityStats.productivity_days as productivityDay}
+					<h2 class="text-lg font-bold">As for your goals:</h2>
+					{#if goalProductivityDaysNumber == 0}
+						<h2 class="text-md text-gray-500">There were no goals set during this time period</h2>
+					{/if}
+					{#each goalProductivityDays as goalProductivityDay}
 						<div class="flex gap-2">
 							<p class="text-gray-500">
-								{new Date(productivityDay.date).toISOString().split('T')[0]}
+								{new Date(goalProductivityDay.date).toISOString().split('T')[0]}
 							</p>
-							<p class="text-gray-500">{productivityDay.total_points} points</p>
+							<p class="text-gray-500">{goalProductivityDay.total_points} points</p>
+							{#if goalProductivityDay.status === 'completed'}
+								<p class="text-green-500">Goal achieved</p>
+							{:else}
+								<p class="text-red-500">Goal not achieved</p>
+							{/if}
 						</div>
 					{/each}
 				</div>
+				{#if (completedProductivityDaysNumber / goalProductivityDaysNumber) * 100 > 60}
+					<h2 class="text-lg font-bold text-green-500">
+						You completed {(completedProductivityDaysNumber / goalProductivityDaysNumber) * 100}% of
+						your goals in this time period
+					</h2>
+				{:else if (completedProductivityDaysNumber / goalProductivityDaysNumber) * 100 < 60 && (completedProductivityDaysNumber / goalProductivityDaysNumber) * 100 > 30}
+					<h2 class="text-lg font-bold text-yellow-500">
+						You completed {(completedProductivityDaysNumber / goalProductivityDaysNumber) * 100}% of
+						your goals in this time period
+					</h2>
+				{:else if (completedProductivityDaysNumber / goalProductivityDaysNumber) * 100 > 0 && (completedProductivityDaysNumber / goalProductivityDaysNumber) * 100 < 30}
+					<h2 class="text-lg font-bold text-red-500">
+						You completed {Math.round(
+							(completedProductivityDaysNumber / goalProductivityDaysNumber) * 100
+						)}% of your goals in this time period
+					</h2>
+				{/if}
 			</div>
 		</form>
 	</Card.Content>
 {:else if defaultperiod}
+	<h1 class="text-2xl text-center font-bold mb-4">Data insights</h1>
 	<form onsubmit={handleSubmit} class="flex flex-col gap-2">
 		<h2 class="text-lg font-bold text-center">
 			Tell us in what period you want to see your productivity in

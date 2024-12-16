@@ -45,110 +45,68 @@
 			<div class="flex h-16 shrink-0 items-center">
 				<h2 class="text-white font-bold text-xl mt-5">Vext - The Ultimate Habit Tracker</h2>
 			</div>
-			<nav class="flex flex-1 flex-col">
+			<nav class="flex flex-1 flex-col mt-2">
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
 					<li>
-						<ul role="list" class="-mx-2 space-y-1">
-							<div class="text-xs font-semibold leading-6 text-white">Personal</div>
+						<ul role="list" class="-mx-2 space-y-4">
+							<div class="text-md font-semibold leading-6 text-white">Menu</div>
 							<li>
-								<!-- Current: "bg-indigo-700 text-white", Default: "text-indigo-200 hover:text-white hover:bg-indigo-700" -->
 								<a
 									href="/dashboard"
-									class="group flex gap-x-3 rounded-md bg-blue-400 p-2 text-sm font-semibold leading-6 text-white"
+									class="group flex gap-x-3 rounded-md bg-blue-400 p-2 text-md font-semibold leading-6 text-white"
 								>
-									<Icon icon="fa6-solid:house" width="24" height="24" style="color: white" />
+									<Icon icon="fa6-solid:house" width="26" height="26" style="color: white" />
 									Dashboard
 								</a>
 							</li>
 							<li>
 								<a
 									href="/activity/create"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
+									class="group flex gap-x-3 rounded-md p-2 text-md font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
 								>
-									<Icon icon="ic:baseline-plus" width="24" height="24" style="color: white" />
+									<Icon icon="ic:baseline-plus" width="26" height="26" style="color: white" />
 									Set Activity
 								</a>
 							</li>
 							<li>
 								<a
 									href="/activities"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
+									class="group flex gap-x-3 rounded-md p-2 text-md font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
 								>
-									<Icon icon="material-symbols:list" width="24" height="24" style="color: white" />
+									<Icon icon="material-symbols:list" width="26" height="26" style="color: white" />
 									My Activity List
 								</a>
 							</li>
 							<li>
 								<a
 									href="/activities/daily"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
+									class="group flex gap-x-3 rounded-md p-2 text-md-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
 								>
-									<Icon icon="material-symbols:list" width="24" height="24" style="color: white" />
+									<Icon icon="material-symbols:list" width="26" height="26" style="color: white" />
 									Daily Activity List
 								</a>
 							</li>
 							<li>
 								<a
 									href="/data-insights"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
+									class="group flex gap-x-3 rounded-md p-2 text-md font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
 								>
 									<Icon
 										icon="fluent:data-area-24-filled"
-										width="24"
-										height="24"
+										width="26"
+										height="26"
 										style="color: white"
 									/>
 									Data Insights
 								</a>
 							</li>
-						</ul>
-					</li>
-					<li>
-						<div class="text-xs font-semibold leading-6 text-white">Teams</div>
-						<ul role="list" class="-mx-2 mt-2 space-y-1">
 							<li>
 								<a
-									href="/team/create"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
+									href="/suggest-feature"
+									class="group flex gap-x-3 rounded-md p-2 text-md font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
 								>
-									<Icon
-										icon="fluent:people-team-add-24-filled"
-										width="24"
-										height="24"
-										style="color: white"
-									/>
-									Create Your Team
-								</a>
-							</li>
-							<li>
-								<a
-									href="/teams"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
-								>
-									<Icon
-										icon="fluent:people-team-16-filled"
-										width="24"
-										height="24"
-										style="color: white"
-									/>
-									My Teams
-								</a>
-							</li>
-							<li>
-								<a
-									href="/invitations"
-									class="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-white hover:bg-blue-400 hover:text-white"
-									onclick={() => (notificationCount = 0)}
-								>
-									<Icon icon="mingcute:invite-fill" width="24" height="24" style="color: white" />
-									Team Invitations
-									{#if notificationCount > 0}
-										<div
-											class="ml-1 rounded-full bg-red-500 px-1.5 text-xs font-medium text-white flex items-center justify-center"
-										>
-											{notificationCount}
-										</div>
-									{/if}
+									<Icon width="26" height="26" icon="material-symbols:help" />
+									Suggest a feature
 								</a>
 							</li>
 						</ul>
@@ -306,14 +264,11 @@
 								aria-labelledby="user-menu-button"
 								tabindex="-1"
 							>
-								<!-- Active: "bg-gray-50", Not Active: "" -->
-								<form
-									method="POST"
-									action="?/signout"
-									class="block px-3 py-1 text-sm leading-6 text-gray-900"
-								>
-									<Button type="submit" class="bg-blue-500">Sign out</Button>
-								</form>
+								<div class="flex items-center justify-center">
+									<a href="/logout" class="bg-blue-500">
+										<Button class="bg-blue-500">Sign out</Button>
+									</a>
+								</div>
 							</div>
 						{/if}
 					</div>

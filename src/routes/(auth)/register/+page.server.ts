@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 export const actions = {
 	register: async (event) => {
 		const formData = await event.request.formData();
@@ -10,19 +10,20 @@ export const actions = {
 			method: 'POST',
 			body: JSON.stringify({ username, password, email, set_default })
 		});
-		if (response.ok) {
-			const user = await response.json();
-			event.cookies.set('sessionId', user.api_key, {
-				path: '/',
-				secure: true,
-				httpOnly: true,
-				sameSite: 'strict',
-				maxAge: 3600
-			});
-			throw redirect(303, '/dashboard');
-		} else {
-			const message = await response.json();
-			return fail(400, { error: message.error });
+		if (!response.ok) {
+			const errorResponse = await response.json();
+			return {
+				error: errorResponse.error
+			};
 		}
+		const tokenResponse = await response.json();
+		event.cookies.set('token', tokenResponse.token, {
+			path: '/',
+			sameSite: 'strict',
+			secure: true,
+			httpOnly: true,
+			MaxAge: 60 * 60 * 24
+		});
+		throw redirect(303, '/dashboard');
 	}
 };

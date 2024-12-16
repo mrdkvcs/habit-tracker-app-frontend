@@ -21,17 +21,12 @@
 </script>
 
 <Card.Header class="flex flex-col gap-4">
-	<h1 class="text-2xl font-bold text-center">Hey welcome , {user.username}</h1>
+	<h1 class="text-2xl font-bold text-center">Welcome , {user.username}</h1>
 	<h2 class="text-xl">Today : {formattedDate}</h2>
 	<div class="flex flex-col items-center justify-center gap-2">
 		{#if dailyPoints.goal_points === 0}
-			<p class="text-sm text-gray-500">
-				Total productivity points for today: {dailyPoints.total_points}
-			</p>
-		{/if}
-		{#if dailyPoints.goal_points === 0}
 			<Dialog.Root>
-				<Dialog.Trigger class="text-blue-500 w-1/4 mt-5 p-2 rounded"
+				<Dialog.Trigger class="text-blue-500 w-1/4  p-2 rounded"
 					>Set productivity goal for today</Dialog.Trigger
 				>
 				<Dialog.Content class="sm:max-w-[425px]">
@@ -63,10 +58,16 @@
 					</form>
 				</Dialog.Content>
 			</Dialog.Root>
+			{#if dailyPoints.goal_points === 0}
+				<p class="text-lg font-bold text-gray-500">
+					Total productivity points for today: {dailyPoints.total_points}
+				</p>
+			{/if}
 		{:else if dailyPoints.total_points >= dailyPoints.goal_points}
 			<h2 class="text-green-500 font-bold text-center">
 				Productivity goal achieved for the day! Congrats!
 			</h2>
+			<p class="text-gray-500">Total productivity points for today: {dailyPoints.total_points}</p>
 		{:else}
 			<Progress value={dailyPoints.total_points} max={dailyPoints.goal_points} class="w-[60%]" />
 			<p>Productivity goal : {dailyPoints.goal_points} / {dailyPoints.total_points} points</p>
@@ -80,9 +81,5 @@
 	<div class="flex flex-col gap-3 mt-10">
 		<h1 class="text-xl font-bold">Quick Actions:</h1>
 		<a href="/activity/create" class="text-blue-500 text-xl">Set an Activity</a>
-	</div>
-	<div class="flex flex-col gap-3 mt-10">
-		<h1 class="text-xl font-bold">Quick Team Actions:</h1>
-		<a href="/team/create" class="text-blue-500 text-xl">Create your productivity team</a>
 	</div>
 </Card.Content>

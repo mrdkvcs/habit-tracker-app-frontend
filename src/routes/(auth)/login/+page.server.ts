@@ -1,30 +1,29 @@
-import { redirect, fail } from '@sveltejs/kit';
-
+import { redirect } from '@sveltejs/kit';
 export const actions = {
 	login: async (event) => {
 		const form = await event.request.formData();
+		console.log(event.url);
 		const email = form.get('email');
 		const password = form.get('password');
+		const redirectTo = form.get('redirectTo');
 		const response = await fetch('http://localhost:8080/login', {
 			method: 'POST',
 			body: JSON.stringify({ email, password })
 		});
-
 		if (!response.ok) {
-			const message = await response.json();
-			return fail(400, {
-				error: message.error
-			});
+			const errorResponse = await response.json();
+			return {
+				error: errorResponse.error
+			};
 		}
-
-		const user = await response.json();
-		event.cookies.set('sessionId', user.api_key, {
+		const tokenResponse = await response.json();
+		event.cookies.set('token', tokenResponse.token, {
 			path: '/',
-			secure: true,
 			httpOnly: true,
 			sameSite: 'strict',
-			maxAge: 3600
+			secure: true,
+			MaxAge: 60 * 60 * 24
 		});
-		throw redirect(303, '/dashboard');
+		throw redirect(303, redirectTo);
 	}
 };

@@ -1,15 +1,21 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { Label } from '$lib/components/ui/label';
+	import { Switch } from '$lib/components/ui/switch';
 	import * as Card from '$lib/components/ui/card';
-	let dialog: HTMLDialogElement = $state();
+	let multiplematchedActvitiesDialog: HTMLDialogElement = $state();
+	let nomatchedActivitiesDialog: HTMLDialogElement = $state();
 	let successMessage: string = $state('');
+	let activityInput: string = $state('');
 	let errorMessage: string = $state('');
+	let oneTime: boolean = $state(false);
 	let matchedActivities: MatchedActivity = $state();
 	interface MatchedActivity {
 		matched_activities: Activity[];
 		duration: number;
 		description: string;
+		name: string;
 	}
 
 	interface Activity {
@@ -30,36 +36,39 @@
 	}
 
 	let { data, form }: Props = $props();
-	const { user } = data;
+	const { token } = data;
 
-	async function setActivityLog(event: Event) {
-		event.preventDefault();
+	async function setActivityLog(e: Event) {
+		e.preventDefault();
 		errorMessage = '';
 		successMessage = '';
 		const response = await fetch('http://localhost:8080/activities/logs', {
 			method: 'POST',
 			headers: {
-				Authorization: `Apikey ${user.api_key}`
+				Authorization: `Bearer ${token}`
 			},
 			body: JSON.stringify({ activity_input: activityInput })
 		});
 		if (response.ok) {
 			const matchedActivitiesResponse = await response.json();
-			if (matchedActivitiesResponse.length === 1) {
+			if (matchedActivitiesResponse.matched_activities.length === 1) {
 				successMessage = 'Activity logged successfully';
 				activityInput = '';
 				return;
+			} else if (matchedActivitiesResponse.matched_activities.length > 1) {
+				matchedActivities = matchedActivitiesResponse;
+				activityInput = '';
+				multiplematchedActvitiesDialog.showModal();
+			} else {
+				matchedActivities = matchedActivitiesResponse;
+				activityInput = '';
+				nomatchedActivitiesDialog.showModal();
 			}
-			matchedActivities = matchedActivitiesResponse;
-			activityInput = '';
-			dialog.showModal();
 		} else {
 			const errorResponse = await response.json();
 			errorMessage = errorResponse.error;
 		}
 	}
-
-	let activityInput: string = $state('');
 </script>
 
 {#if form}
@@ -74,6 +83,7 @@
 {#if errorMessage}
 	<p class="text-red-500 text-center">{errorMessage}</p>
 {/if}
+
 {#if successMessage}
 	<div class="flex gap-2 justify-center items-center">
 		<p class="text-green-500 text-center">{successMessage}</p>
@@ -85,7 +95,7 @@
 
 <Card.Content>
 	<dialog
-		bind:this={dialog}
+		bind:this={multiplematchedActvitiesDialog}
 		class="p-5 rounded w-[500px] absolute left-[5%] top-[-5%] transition ease-in-out"
 	>
 		<h2 class="text-lg font-bold">
@@ -94,9 +104,9 @@
 		</h2>
 		{#if matchedActivities?.matched_activities.length > 0}
 			<div class="flex flex-col gap-2 mt-2">
-				{#each matchedActivities.matched_activities as matchedActivity}
-					<div class="flex gap-2">
-						<form method="POST" action="?/setSpecificActivity">
+				{#if matchedActivities}
+					{#each matchedActivities.matched_activities as matchedActivity}
+						<form class="flex gap-2" method="POST" action="?/setSpecificActivity">
 							<button type="submit" class="text-blue-500">{matchedActivity.name}</button>
 							{#if matchedActivity.points > 0}
 								<p class="text-green-500">{matchedActivity.points} / hour</p>
@@ -113,11 +123,68 @@
 								value={matchedActivities.description}
 							/>
 						</form>
-					</div>
-				{/each}
-				<button onclick={() => dialog.close()} class="text-red-500 text-left mt-2">Cancel</button>
+					{/each}
+				{/if}
+				<button
+					onclick={() => multiplematchedActvitiesDialog.close()}
+					class="text-red-500 text-left mt-2">Cancel</button
+				>
 			</div>
 		{/if}
+	</dialog>
+	<dialog
+		bind:this={nomatchedActivitiesDialog}
+		class="p-5 rounded w-[500px] absolute left-[5%] top-[-5%] transition ease-in-out"
+	>
+		<h2 class="text-lg font-bold">
+			Oh , we are detecting that the typed activitiy is not set in your activity list , but you can
+			add it now , how much points would you give to the typed activity?
+		</h2>
+		<div class="flex flex-col gap-5 mt-2">
+			{#if matchedActivities}
+				<h2 class="font-bold">Activity name : {matchedActivities.name}</h2>
+				<form method="POST" class="flex flex-col gap-2" action="?/setNewActivity">
+					<input
+						id="activityPoints"
+						name="activityPoints"
+						required
+						placeholder="(Max 10 , Min -10)/hour"
+						type="number"
+						max="10"
+						min="-10"
+						class="col-span-3 rounded border p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					<input
+						id="activityName"
+						name="activityName"
+						type="hidden"
+						value={matchedActivities.name}
+					/>
+					<input
+						id="activityDuration"
+						name="activityDuration"
+						type="hidden"
+						value={matchedActivities.duration}
+					/>
+					<input
+						id="activityDescription"
+						name="activityDescription"
+						type="hidden"
+						value={matchedActivities.description}
+					/>
+					<Switch id="oneTimeSet" bind:checked={oneTime} />
+					<Label for="oneTimeSet">Just one time</Label>
+					<input id="oneTime" name="oneTime" type="hidden" value={oneTime} />
+					<div class="flex items-center mt-5 justify-between gap-2">
+						<Button class="bg-blue-500" type="submit">Set new activity</Button>
+						<button
+							onclick={() => nomatchedActivitiesDialog.close()}
+							class="text-red-500 text-left mt-2">Cancel</button
+						>
+					</div>
+				</form>
+			{/if}
+		</div>
 	</dialog>
 	<h1 class="text-center font-bold text-2xl mb-5">Set an activity for today</h1>
 	<div class="flex gap-2 justify-center items-center">
@@ -126,7 +193,7 @@
 		</p>
 		<a class="text-blue-500 underline" href="/activities">activity list</a>
 	</div>
-	<form onsubmit={setActivityLog} method="POST" class="flex flex-col">
+	<form onsubmit={setActivityLog} class="flex flex-col">
 		<input
 			type="text"
 			autocomplete="off"
