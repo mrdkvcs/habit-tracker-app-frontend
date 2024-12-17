@@ -3,9 +3,11 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card';
-	let dialog: HTMLDialogElement = $state();
-	let activityNameInput: HTMLInputElement = $state();
-	let activityPointsInput: HTMLInputElement = $state();
+	let dialog: HTMLDialogElement | undefined = $state();
+	let activityNameInput: HTMLInputElement | undefined = $state();
+	let activityPointsInput: HTMLInputElement | undefined = $state();
+	let activityNameInputValue: string | undefined = $state('');
+	let activityPointsInputValue: string | undefined = $state('');
 	let successMessage: string = $state('');
 	let errorMessage: string = $state('');
 	let selectedActivityId: string = $state('');
@@ -19,14 +21,25 @@
 
 	let { activities, token } = $state(data);
 
+	function setInputValues() {
+		activityNameInputValue = activityNameInput?.value;
+		activityPointsInputValue = activityPointsInput?.value;
+	}
+
 	function setActivityName(e: Event) {
 		const target = e.target as HTMLInputElement;
-		activityNameInput.value = target.value;
+		if (activityNameInput != undefined) {
+			activityNameInput.value = target.value;
+			activityNameInputValue = activityNameInput.value;
+		}
 	}
 
 	function setActivityPoints(e: Event) {
 		const target = e.target as HTMLInputElement;
-		activityPointsInput.value = target.value;
+		if (activityPointsInput != undefined) {
+			activityPointsInput.value = target.value;
+			activityPointsInputValue = activityPointsInput.value;
+		}
 	}
 
 	async function checkActivityLogExists(activity_id: string) {
@@ -48,7 +61,7 @@
 		const logExists = await response.json();
 		if (logExists) {
 			selectedActivityId = activity_id;
-			dialog.showModal();
+			dialog?.showModal();
 			return;
 		}
 
@@ -110,12 +123,12 @@
 					<button
 						onclick={() => {
 							removeActivity(selectedActivityId);
-							dialog.close();
+							dialog?.close();
 							selectedActivityId = '';
 						}}
 						class="bg-blue-500 w-[100px] text-white p-1 rounded">Yes</button
 					>
-					<button onclick={() => dialog.close()} class="text-red-500 bg-none">Cancel</button>
+					<button onclick={() => dialog?.close()} class="text-red-500 bg-none">Cancel</button>
 				</div>
 			</dialog>
 			<div class="flex gap-2 items-center mt-2">
@@ -129,7 +142,9 @@
 					<p class="text-gray-500">default</p>
 				{/if}
 				<Dialog.Root>
-					<Dialog.Trigger class="bg-none ml-2 text-blue-500">Edit</Dialog.Trigger>
+					<Dialog.Trigger onclick={setInputValues} class="bg-none ml-2 text-blue-500"
+						>Edit</Dialog.Trigger
+					>
 					<Dialog.Content class="sm:max-w-[425px]">
 						<Dialog.Header>
 							<Dialog.Title>Edit activity</Dialog.Title>
@@ -140,9 +155,9 @@
 									<Label for="name" class="text-right">Name</Label>
 									<input
 										value={activity.name}
-										bind:this={activityNameInput}
 										oninput={setActivityName}
 										id="activityname"
+										bind:this={activityNameInput}
 										required
 										name="activityname"
 										class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -167,8 +182,8 @@
 							</div>
 							<input type="hidden" value={activity.activity_id} name="activityid" />
 							<Button
-								disabled={activityNameInput?.value === activity.name &&
-									+activityPointsInput?.value == activity.points}
+								disabled={activityNameInputValue === activity.name &&
+									+activityPointsInputValue === activity.points}
 								type="submit"
 								class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
 								>Edit
