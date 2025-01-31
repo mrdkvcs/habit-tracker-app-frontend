@@ -14,6 +14,13 @@ export const actions = {
 		}
 		const matchedActivitiesResponse = await response.json();
 		if (matchedActivitiesResponse.matched_activities.length === 1) {
+			if (matchedActivitiesResponse.streak_count && matchedActivitiesResponse.is_streak_record) {
+				return {
+					matchedActivitieslength: 1,
+					streakCount: matchedActivitiesResponse.streak_count,
+					isStreakRecord: matchedActivitiesResponse.is_streak_record
+				};
+			}
 			return {
 				matchedActivitieslength: 1
 			};
@@ -50,6 +57,16 @@ export const actions = {
 			const errorMessage = await response.json();
 			return fail(400, { error: errorMessage.error });
 		}
+		const setSpecificActivityLogResponse = await response.json();
+		if (
+			setSpecificActivityLogResponse.streak_count &&
+			setSpecificActivityLogResponse.is_streak_record
+		) {
+			return {
+				streakCount: setSpecificActivityLogResponse.streak_count,
+				isStreakRecord: setSpecificActivityLogResponse.is_streak_record
+			};
+		}
 		return {
 			success: true
 		};
@@ -74,6 +91,13 @@ export const actions = {
 		if (!response.ok) {
 			const errorMessage = await response.json();
 			return fail(400, { error: errorMessage.error });
+		}
+		const setNewActivityLogResponse = await response.json();
+		if (setNewActivityLogResponse.streak_count && setNewActivityLogResponse.is_streak_record) {
+			return {
+				streakCount: setNewActivityLogResponse.streak_count,
+				isStreakRecord: setNewActivityLogResponse.is_streak_record
+			};
 		}
 		return {
 			success: true

@@ -32,13 +32,38 @@
 			if (result.type === 'success') {
 				const { matchedActivitieslength } = result.data;
 				if (matchedActivitieslength === 1) {
-					toast.push('Activity set successfully!', {
-						theme: {
-							'--toastColor': 'mintcream',
-							'--toastBackground': 'rgba(72,187,120,0.9)',
-							'--toastBarBackground': '#2F855A'
-						}
-					});
+					if (result.data.streakCount === undefined && result.data.isStreakRecord === undefined) {
+						toast.push('Activity set successfully!', {
+							theme: {
+								'--toastColor': 'mintcream',
+								'--toastBackground': 'rgba(72,187,120,0.9)',
+								'--toastBarBackground': '#2F855A'
+							}
+						});
+					}
+					if (result.data.streakCount && result.data.isStreakRecord === true) {
+						toast.push(
+							`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
+							{
+								theme: {
+									'--toastColor': 'mintcream',
+									'--toastBackground': 'rgba(72,187,120,0.9)',
+									'--toastBarBackground': '#2F855A'
+								}
+							}
+						);
+					} else if (result.data.streakCount && result.data.isStreakRecord === false) {
+						toast.push(
+							`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! 🔥`,
+							{
+								theme: {
+									'--toastColor': 'mintcream',
+									'--toastBackground': 'rgba(72,187,120,0.9)',
+									'--toastBarBackground': '#2F855A'
+								}
+							}
+						);
+					}
 				} else if (matchedActivitieslength > 1) {
 					matchedActivities = result.data.matchedActivitiesResponse;
 					multiplematchedActvitiesDialog?.showModal();
@@ -61,13 +86,38 @@
 		return async ({ result, update }) => {
 			await update();
 			if (result.type === 'success') {
-				toast.push('Activity set successfully!', {
-					theme: {
-						'--toastColor': 'mintcream',
-						'--toastBackground': 'rgba(72,187,120,0.9)',
-						'--toastBarBackground': '#2F855A'
-					}
-				});
+				if (result.data.streakCount === undefined && result.data.isStreakRecord === undefined) {
+					toast.push('Activity set successfully!', {
+						theme: {
+							'--toastColor': 'mintcream',
+							'--toastBackground': 'rgba(72,187,120,0.9)',
+							'--toastBarBackground': '#2F855A'
+						}
+					});
+				}
+				if (result.data.streakCount && result.data.isStreakRecord === true) {
+					toast.push(
+						`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
+						{
+							theme: {
+								'--toastColor': 'mintcream',
+								'--toastBackground': 'rgba(72,187,120,0.9)',
+								'--toastBarBackground': '#2F855A'
+							}
+						}
+					);
+				} else if (result.data.streakCount && result.data.isStreakRecord === false) {
+					toast.push(
+						`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! 🔥`,
+						{
+							theme: {
+								'--toastColor': 'mintcream',
+								'--toastBackground': 'rgba(72,187,120,0.9)',
+								'--toastBarBackground': '#2F855A'
+							}
+						}
+					);
+				}
 				multiplematchedActvitiesDialog?.close();
 			} else {
 				toast.push(`There was an error setting the activity log: ${result.data.error}`, {
@@ -85,13 +135,38 @@
 		return async ({ result, update }) => {
 			await update();
 			if (result.type === 'success') {
-				toast.push('New activity set successfully!', {
-					theme: {
-						'--toastColor': 'mintcream',
-						'--toastBackground': 'rgba(72,187,120,0.9)',
-						'--toastBarBackground': '#2F855A'
-					}
-				});
+				if (result.data.streakCount === undefined && result.data.isStreakRecord === undefined) {
+					toast.push('New activity set successfully!', {
+						theme: {
+							'--toastColor': 'mintcream',
+							'--toastBackground': 'rgba(72,187,120,0.9)',
+							'--toastBarBackground': '#2F855A'
+						}
+					});
+				}
+				if (result.data.streakCount && result.data.isStreakRecord === true) {
+					toast.push(
+						`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
+						{
+							theme: {
+								'--toastColor': 'mintcream',
+								'--toastBackground': 'rgba(72,187,120,0.9)',
+								'--toastBarBackground': '#2F855A'
+							}
+						}
+					);
+				} else if (result.data.streakCount && result.data.isStreakRecord === false) {
+					toast.push(
+						`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! 🔥`,
+						{
+							theme: {
+								'--toastColor': 'mintcream',
+								'--toastBackground': 'rgba(72,187,120,0.9)',
+								'--toastBarBackground': '#2F855A'
+							}
+						}
+					);
+				}
 				nomatchedActivitiesDialog?.close();
 			} else {
 				toast.push(`There was an error setting the new activity log: ${result.data.error}`, {
@@ -199,14 +274,14 @@
 					<Switch id="oneTimeSet" bind:checked={oneTime} />
 					<Label for="oneTimeSet">Dont save to my activity list</Label>
 					<input id="oneTime" name="oneTime" type="hidden" bind:value={oneTime} />
-					<div class="flex items-center mt-5 justify-between gap-2">
-						<Button class="bg-blue-500" type="submit">Set new activity</Button>
-						<button
-							onclick={() => nomatchedActivitiesDialog?.close()}
-							class="text-red-500 text-left mt-2">Cancel</button
-						>
+					<div class="flex items-center">
+						<Button class="bg-blue-500 mt-5" type="submit">Set new activity</Button>
 					</div>
 				</form>
+				<button
+					onclick={() => nomatchedActivitiesDialog?.close()}
+					class="text-red-500 text-right absolute bottom-6 right-6">Cancel</button
+				>
 			{/if}
 		</div>
 	</dialog>
