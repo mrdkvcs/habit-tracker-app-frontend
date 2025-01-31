@@ -3,23 +3,25 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card';
+	import { toast } from '@zerodevx/svelte-toast';
+	import { superForm } from 'sveltekit-superforms/client';
 	let dialog: HTMLDialogElement | undefined = $state();
 	let activityNameInput: HTMLInputElement | undefined = $state();
 	let activityPointsInput: HTMLInputElement | undefined = $state();
 	let activityNameInputValue: string | undefined = $state('');
 	let activityPointsInputValue: string | undefined = $state('');
-	let successMessage: string = $state('');
-	let errorMessage: string = $state('');
 	let selectedActivityId: string = $state('');
 	interface Activity {
 		activity_id: string;
 		name: string;
 		points: number;
 		type: string;
+		optionsopen: boolean;
 	}
-	let { data, form } = $props();
+	let { data } = $props();
 
-	let { activities, token } = $state(data);
+	let { formedActivities, token } = $state(data);
+	let { form, errors, message } = superForm(data.form);
 
 	function setInputValues() {
 		activityNameInputValue = activityNameInput?.value;
@@ -42,9 +44,16 @@
 		}
 	}
 
+	function setOptionsState(activity_id: string) {
+		formedActivities = formedActivities.map((activity: Activity) => {
+			if (activity.activity_id === activity_id) {
+				return { ...activity, optionsopen: !activity.optionsopen };
+			}
+			return activity;
+		});
+	}
+
 	async function checkActivityLogExists(activity_id: string) {
-		errorMessage = '';
-		successMessage = '';
 		const response = await fetch(
 			`http://localhost:8080/activities/logs/exist?activity_id=${activity_id}`,
 			{
@@ -55,7 +64,13 @@
 		);
 		if (!response.ok) {
 			const errorResponse = await response.json();
-			errorMessage = errorResponse.error;
+			toast.push(errorResponse.error, {
+				theme: {
+					'--toastColor': 'white',
+					'--toastBackground': '#FF0000',
+					'--toastBarBackground': '#FF0000'
+				}
+			});
 		}
 
 		const logExists = await response.json();
@@ -69,47 +84,45 @@
 	}
 
 	async function removeActivity(activity_id: string) {
-		errorMessage = '';
-		successMessage = '';
 		const response = await fetch(`http://localhost:8080/activities/${activity_id}`, {
 			method: 'DELETE'
 		});
 
 		if (!response.ok) {
 			const errorResponse = await response.json();
-			errorMessage = errorResponse.error;
+			toast.push(errorResponse.error, {
+				theme: {
+					'--toastColor': 'white',
+					'--toastBackground': '#FF0000',
+					'--toastBarBackground': '#FF0000'
+				}
+			});
 			return;
 		}
 		const responseMessage = await response.json();
-		successMessage = responseMessage;
-		activities = activities.filter((activity: Activity) => activity.activity_id !== activity_id);
+		toast.push(responseMessage, {
+			theme: {
+				'--toastColor': 'white',
+				'--toastBackground': '#FF0000',
+				'--toastBarBackground': '#FF0000'
+			}
+		});
+		formedActivities = formedActivities.filter(
+			(activity: Activity) => activity.activity_id !== activity_id
+		);
 	}
 </script>
 
-<h1 class="text-xl font-bold mb-5 ml-5">My activity list (points/hour)</h1>
-
-{#if form}
-	{#if form.error}
-		<p class="text-red-500 my-2 ml-5">{form.error}></p>
+<Card.Content class="mt-10">
+	<h1 class="text-xl font-bold mb-5">My activity list (points/hour)</h1>
+	{#if $message}
+		<p class="text-green-500">{$message}</p>
 	{/if}
-	{#if form.success}
-		<p class="text-green-500 my-2 ml-5">{form.success}</p>
-	{/if}
-{/if}
-
-{#if errorMessage}
-	<p class="text-red-500 my-2 ml-5">{errorMessage}</p>
-{/if}
-{#if successMessage}
-	<p class="text-green-500 my-2 ml-5">{successMessage}</p>
-{/if}
-
-<Card.Content>
-	<div class="flex flex-col gap-2">
-		{#if activities.length === 0}
-			<h2 class="text-gray-500 text-lg text-center">You currently don't have any activities</h2>
+	<ul role="list" class="divide-y divide-gray-100">
+		{#if formedActivities.length == 0}
+			<h2 class="text-gray-500 text-center">You currently have no activities set</h2>
 		{/if}
-		{#each activities as activity}
+		{#each formedActivities as activity}
 			<dialog
 				bind:this={dialog}
 				class="p-10 rounded w-[500px] absolute left-[5%] top-[-5%] transition ease-in-out"
@@ -131,112 +144,172 @@
 					<button onclick={() => dialog?.close()} class="text-red-500 bg-none">Cancel</button>
 				</div>
 			</dialog>
-			<div class="flex gap-2 items-center mt-2">
-				<h2 class="text-blue-500 text-lg">{activity.name}</h2>
-				{#if activity.points > 0}
-					<h2 class="text-green-500">{activity.points}</h2>
-				{:else}
-					<h2 class="text-red-500">{activity.points}</h2>
-				{/if}
-				{#if activity.type === 'default'}
-					<p class="text-gray-500">default</p>
-				{/if}
-				<Dialog.Root>
-					<Dialog.Trigger onclick={setInputValues} class="bg-none ml-2 text-blue-500"
-						>Edit</Dialog.Trigger
-					>
-					<Dialog.Content class="sm:max-w-[425px]">
-						<Dialog.Header>
-							<Dialog.Title>Edit activity</Dialog.Title>
-						</Dialog.Header>
-						<form method="POST" action="?/editActivity">
-							<div class="grid gap-4 py-4">
-								<div class="grid grid-cols-4 items-center gap-4">
-									<Label for="name" class="text-right">Name</Label>
-									<input
-										value={activity.name}
-										oninput={setActivityName}
-										id="activityname"
-										bind:this={activityNameInput}
-										required
-										name="activityname"
-										class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-									/>
-								</div>
-								<div class="grid grid-cols-4 items-center gap-4">
-									<Label for="username" class="text-right">Points</Label>
-									<input
-										id="activitypoints"
-										name="activitypoints"
-										required
-										placeholder="(Max 10 , Min -10)"
-										value={activity.points}
-										oninput={setActivityPoints}
-										bind:this={activityPointsInput}
-										type="number"
-										max="10"
-										min="-10"
-										class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-									/>
-								</div>
-							</div>
-							<input type="hidden" value={activity.activity_id} name="activityid" />
-							<Button
-								disabled={activityNameInputValue === activity.name &&
-									+activityPointsInputValue === activity.points}
-								type="submit"
-								class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
-								>Edit
-							</Button>
-						</form>
-					</Dialog.Content>
-				</Dialog.Root>
-				<button
-					onclick={() => checkActivityLogExists(activity.activity_id)}
-					class="bg-none text-red-500">Remove</button
-				>
-			</div>
-		{/each}
-		<Dialog.Root>
-			<Dialog.Trigger class="bg-blue-500 text-white w-1/4 mt-5 p-2 rounded">New</Dialog.Trigger>
-			<Dialog.Content class="sm:max-w-[425px]">
-				<Dialog.Header>
-					<Dialog.Title>New activity</Dialog.Title>
-					<Dialog.Description>
-						You can set your daily custom activities here , so our app will know about them , and
-						the points associated by them.
-					</Dialog.Description>
-				</Dialog.Header>
-				<form method="POST" action="?/addactivity">
-					<div class="grid gap-4 py-4">
-						<div class="grid grid-cols-4 items-center gap-4">
-							<Label for="name" class="text-right">Name</Label>
-							<input
-								id="activityname"
-								required
-								name="activityname"
-								class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							/>
-						</div>
-						<div class="grid grid-cols-4 items-center gap-4">
-							<Label for="username" class="text-right">Points</Label>
-							<input
-								id="activitypoints"
-								name="activitypoints"
-								required
-								placeholder="(Max 10 , Min -10)"
-								type="number"
-								max="10"
-								min="-10"
-								class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							/>
-						</div>
+			<li class="flex justify-between gap-x-4 py-5">
+				<div class="flex items-center min-w-0 gap-x-4">
+					<div class="min-w-0 flex-auto">
+						<p class="text-lg font-semibold text-gray-900">
+							{activity.name}
+						</p>
 					</div>
-					<Button type="submit" class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
-						>Add
-					</Button>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
-	</div>
+				</div>
+				<div class="flex shrink-0 items-center gap-x-6">
+					<div class="hidden sm:flex sm:flex-col sm:items-end">
+						{#if activity.points > 0}
+							<p class="text-md text-green-500">{activity.points} points</p>
+						{:else}
+							<p class="text-md text-red-500">{activity.points} points</p>
+						{/if}
+					</div>
+					<div class="relative flex-none">
+						<button
+							type="button"
+							onclick={() => setOptionsState(activity.activity_id)}
+							class="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900"
+							id="options-menu-0-button"
+							aria-expanded="false"
+							aria-haspopup="true"
+						>
+							<span class="sr-only">Open options</span>
+							<svg
+								class="size-5"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								aria-hidden="true"
+								data-slot="icon"
+							>
+								<path
+									d="M10 3a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM10 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM11.5 15.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"
+								/>
+							</svg>
+						</button>
+
+						<!--
+          Dropdown menu, show/hide based on menu state.
+
+          Entering: "transition ease-out duration-100"
+            From: "transform opacity-0 scale-95"
+            To: "transform opacity-100 scale-100"
+          Leaving: "transition ease-in duration-75"
+            From: "transform opacity-100 scale-100"
+            To: "transform opacity-0 scale-95"
+        -->
+						{#if activity.optionsopen}
+							<div
+								class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none transition transform ease-out duration-100"
+								class:opacity-100={activity.optionsopen}
+								class:scale-100={activity.optionsopen}
+								class:opacity-0={!activity.optionsopen}
+								class:scale-95={!activity.optionsopen}
+								role="menu"
+								aria-orientation="vertical"
+								aria-labelledby="options-menu-0-button"
+								tabindex="-1"
+							>
+								<Dialog.Root>
+									<Dialog.Trigger onclick={setInputValues} class="bg-none ml-3 text-blue-500"
+										>Edit</Dialog.Trigger
+									>
+									<Dialog.Content class="sm:max-w-[425px]">
+										<Dialog.Header>
+											<Dialog.Title>Edit activity</Dialog.Title>
+										</Dialog.Header>
+										<form method="POST" action="?/editActivity">
+											<div class="grid gap-4 py-4">
+												<div class="grid grid-cols-4 items-center gap-4">
+													<Label for="name" class="text-right">Name</Label>
+													<input
+														value={activity.name}
+														oninput={setActivityName}
+														id="activityname"
+														bind:this={activityNameInput}
+														required
+														name="activityname"
+														class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+													/>
+												</div>
+												<div class="grid grid-cols-4 items-center gap-4">
+													<Label for="username" class="text-right">Points</Label>
+													<input
+														id="activitypoints"
+														name="activitypoints"
+														required
+														placeholder="(Max 10 , Min -10)"
+														value={activity.points}
+														oninput={setActivityPoints}
+														bind:this={activityPointsInput}
+														type="number"
+														max="10"
+														min="-10"
+														class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+													/>
+												</div>
+											</div>
+											<input type="hidden" value={activity.activity_id} name="activityid" />
+											<Button
+												disabled={activityNameInputValue === activity.name &&
+													+activityPointsInputValue === activity.points}
+												type="submit"
+												class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
+												>Edit
+											</Button>
+										</form>
+									</Dialog.Content>
+								</Dialog.Root>
+								<button
+									onclick={() => checkActivityLogExists(activity.activity_id)}
+									class="block px-3 py-1 text-sm/6 text-red-500">Remove</button
+								>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</li>
+		{/each}
+	</ul>
+	<Dialog.Root>
+		<Dialog.Trigger class="bg-blue-500 text-white w-1/6 mt-5 p-2 rounded">New</Dialog.Trigger>
+		<Dialog.Content class="sm:max-w-[425px]">
+			<Dialog.Header>
+				<Dialog.Title>New activity</Dialog.Title>
+				<Dialog.Description>
+					You can set your daily custom activities here , so our app will know about them , and the
+					points associated by them.
+				</Dialog.Description>
+			</Dialog.Header>
+			<form method="POST" action="?/addactivity">
+				{#if $errors.activityName}
+					<p class="text-red-500">{$errors.activityName}</p>
+				{/if}
+				<div class="grid gap-4 py-4">
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="name" class="text-right">Name</Label>
+						<input
+							id="activityName"
+							bind:value={$form.activityName}
+							required
+							name="activityName"
+							class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="username" class="text-right">Points</Label>
+						<input
+							id="activityPoints"
+							name="activityPoints"
+							bind:value={$form.activityPoints}
+							required
+							placeholder="(Max 10 , Min -10)"
+							type="number"
+							max="10"
+							min="-10"
+							class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+					</div>
+				</div>
+				<Button type="submit" class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
+					>Add
+				</Button>
+			</form>
+		</Dialog.Content>
+	</Dialog.Root>
 </Card.Content>

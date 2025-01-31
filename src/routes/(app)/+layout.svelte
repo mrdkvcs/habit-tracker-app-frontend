@@ -43,17 +43,16 @@
 		<!-- Sidebar component, swap this element with another sidebar if you like -->
 		<div class="flex grow flex-col gap-y-5 overflow-y-auto bg-blue-500 px-6 pb-4">
 			<div class="flex h-16 shrink-0 items-center">
-				<h2 class="text-white font-bold text-xl mt-5">Vext - The Ultimate Habit Tracker</h2>
+				<h2 class="text-white font-bold text-xl mt-5">EaseFlow - The Ultimate Habit Tracker</h2>
 			</div>
-			<nav class="flex flex-1 flex-col mt-2">
+			<nav class="flex flex-1 flex-col mt-5">
 				<ul role="list" class="flex flex-1 flex-col gap-y-7">
 					<li>
 						<ul role="list" class="-mx-2 space-y-4">
-							<div class="text-md font-semibold leading-6 text-white">Menu</div>
 							<li>
 								<a
 									href="/dashboard"
-									class="group flex gap-x-3 rounded-md bg-blue-400 p-2 text-md font-semibold leading-6 text-white"
+									class="group flex gap-x-3 rounded-md hover:bg-blue-400 p-2 text-md font-semibold leading-6 text-white hover:text-white"
 								>
 									<Icon icon="fa6-solid:house" width="26" height="26" style="color: white" />
 									Dashboard

@@ -1,22 +1,10 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { toast } from '@zerodevx/svelte-toast';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Card from '$lib/components/ui/card';
-	let multiplematchedActvitiesDialog: HTMLDialogElement = $state();
-	let nomatchedActivitiesDialog: HTMLDialogElement = $state();
-	let successMessage: string = $state('');
-	let activityInput: string = $state('');
-	let errorMessage: string = $state('');
-	let oneTime: boolean = $state(false);
-	let matchedActivities: MatchedActivity = $state();
-	interface MatchedActivity {
-		matched_activities: Activity[];
-		duration: number;
-		description: string;
-		name: string;
-	}
+	import { enhance } from '$app/forms';
 
 	interface Activity {
 		activity_id: string;
@@ -25,75 +13,101 @@
 		type: string;
 	}
 
-	interface Form {
-		success: string;
-		error: string;
+	interface MatchedActivityResponse {
+		matched_activities: Activity[];
+		duration: number;
+		description: string;
+		name: string;
 	}
 
-	interface Props {
-		data: PageData;
-		form: Form;
-	}
+	let multiplematchedActvitiesDialog: HTMLDialogElement | undefined = $state();
+	let nomatchedActivitiesDialog: HTMLDialogElement | undefined = $state();
+	let oneTime: boolean = $state(false);
+	let matchedActivities: MatchedActivityResponse | undefined = $state();
+	let activityInput = $state('');
 
-	let { data, form }: Props = $props();
-	const { token } = data;
-
-	async function setActivityLog(e: Event) {
-		e.preventDefault();
-		errorMessage = '';
-		successMessage = '';
-		const response = await fetch('http://localhost:8080/activities/logs', {
-			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${token}`
-			},
-			body: JSON.stringify({ activity_input: activityInput })
-		});
-		if (response.ok) {
-			const matchedActivitiesResponse = await response.json();
-			if (matchedActivitiesResponse.matched_activities.length === 1) {
-				successMessage = 'Activity logged successfully';
-				activityInput = '';
-				return;
-			} else if (matchedActivitiesResponse.matched_activities.length > 1) {
-				matchedActivities = matchedActivitiesResponse;
-				activityInput = '';
-				multiplematchedActvitiesDialog.showModal();
+	function setActivityLogSubmit() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				const { matchedActivitieslength } = result.data;
+				if (matchedActivitieslength === 1) {
+					toast.push('Activity set successfully!', {
+						theme: {
+							'--toastColor': 'mintcream',
+							'--toastBackground': 'rgba(72,187,120,0.9)',
+							'--toastBarBackground': '#2F855A'
+						}
+					});
+				} else if (matchedActivitieslength > 1) {
+					matchedActivities = result.data.matchedActivitiesResponse;
+					multiplematchedActvitiesDialog?.showModal();
+				} else {
+					matchedActivities = result.data.matchedActivitiesResponse;
+					nomatchedActivitiesDialog?.showModal();
+				}
 			} else {
-				matchedActivities = matchedActivitiesResponse;
-				activityInput = '';
-				nomatchedActivitiesDialog.showModal();
+				toast.push(`There was an error setting the activity log: ${result.data.error}`, {
+					theme: {
+						'--toastColor': 'white',
+						'--toastBackground': '#FF0000',
+						'--toastBarBackground': '#FF0000'
+					}
+				});
 			}
-		} else {
-			const errorResponse = await response.json();
-			errorMessage = errorResponse.error;
-		}
+		};
+	}
+	function setSpecificActivityLogSubmit() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				toast.push('Activity set successfully!', {
+					theme: {
+						'--toastColor': 'mintcream',
+						'--toastBackground': 'rgba(72,187,120,0.9)',
+						'--toastBarBackground': '#2F855A'
+					}
+				});
+				multiplematchedActvitiesDialog?.close();
+			} else {
+				toast.push(`There was an error setting the activity log: ${result.data.error}`, {
+					theme: {
+						'--toastColor': 'white',
+						'--toastBackground': '#FF0000',
+						'--toastBarBackground': '#FF0000'
+					}
+				});
+				multiplematchedActvitiesDialog?.close();
+			}
+		};
+	}
+	function setNewActivityLogSubmit() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				toast.push('New activity set successfully!', {
+					theme: {
+						'--toastColor': 'mintcream',
+						'--toastBackground': 'rgba(72,187,120,0.9)',
+						'--toastBarBackground': '#2F855A'
+					}
+				});
+				nomatchedActivitiesDialog?.close();
+			} else {
+				toast.push(`There was an error setting the new activity log: ${result.data.error}`, {
+					theme: {
+						'--toastColor': 'white',
+						'--toastBackground': '#FF0000',
+						'--toastBarBackground': '#FF0000'
+					}
+				});
+				nomatchedActivitiesDialog?.close();
+			}
+		};
 	}
 </script>
 
-{#if form}
-	{#if form.success}
-		<p class="text-green-500 text-center">{form.success}</p>
-	{/if}
-	{#if form.error}
-		<p class="text-red-500 text-center">{form.error}</p>
-	{/if}
-{/if}
-
-{#if errorMessage}
-	<p class="text-red-500 text-center">{errorMessage}</p>
-{/if}
-
-{#if successMessage}
-	<div class="flex gap-2 justify-center items-center">
-		<p class="text-green-500 text-center">{successMessage}</p>
-		<a href="/activities/daily" class="text-blue-500 underline"
-			>You can watch your daily activities here</a
-		>
-	</div>
-{/if}
-
-<Card.Content>
+<Card.Content class="mt-10">
 	<dialog
 		bind:this={multiplematchedActvitiesDialog}
 		class="p-5 rounded w-[500px] absolute left-[5%] top-[-5%] transition ease-in-out"
@@ -106,7 +120,12 @@
 			<div class="flex flex-col gap-2 mt-2">
 				{#if matchedActivities}
 					{#each matchedActivities.matched_activities as matchedActivity}
-						<form class="flex gap-2" method="POST" action="?/setSpecificActivity">
+						<form
+							class="flex gap-2"
+							method="POST"
+							action="?/setSpecificActivityLog"
+							use:enhance={setSpecificActivityLogSubmit}
+						>
 							<button type="submit" class="text-blue-500">{matchedActivity.name}</button>
 							{#if matchedActivity.points > 0}
 								<p class="text-green-500">{matchedActivity.points} / hour</p>
@@ -126,7 +145,7 @@
 					{/each}
 				{/if}
 				<button
-					onclick={() => multiplematchedActvitiesDialog.close()}
+					onclick={() => multiplematchedActvitiesDialog?.close()}
 					class="text-red-500 text-left mt-2">Cancel</button
 				>
 			</div>
@@ -143,7 +162,12 @@
 		<div class="flex flex-col gap-5 mt-2">
 			{#if matchedActivities}
 				<h2 class="font-bold">Activity name : {matchedActivities.name}</h2>
-				<form method="POST" class="flex flex-col gap-2" action="?/setNewActivity">
+				<form
+					method="POST"
+					action="?/setNewActivityLog"
+					class="flex flex-col gap-2"
+					use:enhance={setNewActivityLogSubmit}
+				>
 					<input
 						id="activityPoints"
 						name="activityPoints"
@@ -173,12 +197,12 @@
 						value={matchedActivities.description}
 					/>
 					<Switch id="oneTimeSet" bind:checked={oneTime} />
-					<Label for="oneTimeSet">Just one time</Label>
-					<input id="oneTime" name="oneTime" type="hidden" value={oneTime} />
+					<Label for="oneTimeSet">Dont save to my activity list</Label>
+					<input id="oneTime" name="oneTime" type="hidden" bind:value={oneTime} />
 					<div class="flex items-center mt-5 justify-between gap-2">
 						<Button class="bg-blue-500" type="submit">Set new activity</Button>
 						<button
-							onclick={() => nomatchedActivitiesDialog.close()}
+							onclick={() => nomatchedActivitiesDialog?.close()}
 							class="text-red-500 text-left mt-2">Cancel</button
 						>
 					</div>
@@ -186,25 +210,34 @@
 			{/if}
 		</div>
 	</dialog>
-	<h1 class="text-center font-bold text-2xl mb-5">Set an activity for today</h1>
+
+	<h1 class="text-center font-bold text-2xl mb-5">Tell me what you have done today.</h1>
+
 	<div class="flex gap-2 justify-center items-center">
 		<p class="text-center mb-5 mt-5 text-gray-500">
 			You can only set activities associated by your
 		</p>
 		<a class="text-blue-500 underline" href="/activities">activity list</a>
 	</div>
-	<form onsubmit={setActivityLog} class="flex flex-col">
+	<form
+		method="POST"
+		action="?/setActivityLog"
+		use:enhance={setActivityLogSubmit}
+		class="flex flex-col"
+	>
 		<input
 			type="text"
 			autocomplete="off"
 			required
-			bind:value={activityInput}
 			name="activityInput"
+			bind:value={activityInput}
 			class="w-full mx-auto mb-5 border border-blue-500 p-2 text-center rounded"
 			placeholder="Type the activity and the duration for how long you did them (eg : Learning for 2 hours)"
 		/>
-		<Button disabled={activityInput.trim() === ''} type="submit" class="bg-blue-500 mt-5 mx-auto "
-			>Set the activity</Button
+		<Button
+			disabled={activityInput.trim() === ''}
+			type="submit"
+			class="bg-blue-500 px-8 mt-5 mx-auto ">Send</Button
 		>
 	</form>
 </Card.Content>

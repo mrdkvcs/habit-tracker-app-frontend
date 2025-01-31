@@ -1,35 +1,39 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	let { form } = $props();
+	import { superForm } from 'sveltekit-superforms';
+	let { data } = $props();
+	const { form, errors, enhance } = superForm(data.form);
 	const redirectTo = $page.url.searchParams.get('redirectTo') || '/dashboard';
 </script>
 
 <div class="flex min-h-full mt-12 flex-col justify-center py-12 sm:px-6 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
-		<img
-			class="mx-auto h-10 w-auto"
-			src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"
-			alt="Your Company"
-		/>
+		<div class="flex gap-5 items-center justify-center">
+			<h2 class="text-3xl font-bold">EaseFlow</h2>
+			<img
+				class=" h-12 w-auto"
+				src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"
+				alt="Your Company"
+			/>
+		</div>
 		<h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
 			Log in to your account and continue the journey towards greatness!
 		</h2>
 	</div>
 
 	<div class=" sm:mx-auto sm:w-full sm:max-w-[480px]">
-		{#if form}
-			{#if form.error}
-				<p class="text-red-500 text-center mt-2">{form.error}</p>
-			{/if}
-		{/if}
 		<div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-			<form class="space-y-6" action="?/login" method="POST">
+			<form class="space-y-6" use:enhance action={`?/login&redirectTo=${redirectTo}`} method="POST">
+				{#if $errors.email}
+					<p class="text-red-500 mb-2">{$errors.email}</p>
+				{/if}
 				<div>
 					<label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
 					<div class="mt-2">
 						<input
 							id="email"
 							name="email"
+							bind:value={$form.email}
 							type="email"
 							autocomplete="email"
 							required
@@ -44,12 +48,16 @@
 						<input
 							id="password"
 							name="password"
+							bind:value={$form.password}
 							type="password"
 							autocomplete="current-password"
 							required
 							class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm/6"
 						/>
 					</div>
+				</div>
+				<div>
+					<a href="/forgot-password" class="text-blue-500 text-sm">Forgot password?</a>
 				</div>
 				<div>
 					<button

@@ -1,36 +1,57 @@
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { z } from 'zod';
+import { zod } from 'sveltekit-superforms/adapters';
+import { superValidate, setError, message } from 'sveltekit-superforms';
+
+const schema = z.object({
+	activityName: z.string(),
+	activityPoints: z
+		.number()
+		.min(-10, "Points can't be less than -10")
+		.max(10, "Points can't be more than 10")
+});
+interface Activity {
+	activity_id: string;
+	name: string;
+	points: number;
+	type: string;
+}
 
 export const load: PageServerLoad = async (event) => {
+	let formedActivities = [];
 	const token = event.cookies.get('token');
+	const form = await superValidate(zod(schema));
 	const activitiesResponse = await event.fetch('http://localhost:8080/activities');
 	const activities = await activitiesResponse.json();
+	formedActivities = activities.map((activity: Activity) => {
+		return { ...activity, optionsopen: false };
+	});
 	return {
-		activities,
-		token
+		formedActivities,
+		token,
+		form
 	};
 };
 
 export const actions = {
 	addactivity: async (event) => {
-		const formData = await event.request.formData();
-		const name = formData.get('activityname');
-		const activitypoints = formData.get('activitypoints');
-		const points = +activitypoints;
+		const form = await superValidate(event.request, zod(schema));
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
 		const response = await event.fetch('http://localhost:8080/activities', {
 			method: 'POST',
-			body: JSON.stringify({ name, points })
+			body: JSON.stringify({ name: form.data.activityName, points: form.data.activityPoints })
 		});
 		if (!response.ok) {
 			const errorMessage = await response.json();
-			return fail(400, {
-				error: errorMessage.error
-			});
+			return setError(form, 'activityName', errorMessage.error);
 		}
-		return {
-			success: 'Activity added successfully'
-		};
+		return message(form, 'Activity added successfully');
 	},
+
 	editActivity: async ({ request }) => {
 		const formData = await request.formData();
 		const activity_name = formData.get('activityname') as string;

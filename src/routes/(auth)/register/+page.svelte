@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { Switch } from '$lib/components/ui/switch';
 	import { Label } from '$lib/components/ui/label';
+	import { superForm } from 'sveltekit-superforms/client';
+	let { data } = $props();
+	const { form, errors, constraints, enhance } = superForm(data.form);
 	let setDefault = $state(false);
 </script>
 
 <div class="flex min-h-full mt-12 flex-col justify-center py-12 sm:px-6 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
-		<img
-			class="mx-auto h-10 w-auto"
-			src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"
-			alt="Your Company"
-		/>
+		<div class="flex gap-5 items-center justify-center">
+			<h2 class="text-3xl font-bold">EaseFlow</h2>
+			<img
+				class=" h-12 w-auto"
+				src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"
+				alt="Your Company"
+			/>
+		</div>
 		<h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
 			Create your account, and be the best version of yourself with us!
 		</h2>
@@ -18,15 +24,20 @@
 
 	<div class=" sm:mx-auto sm:w-full sm:max-w-[480px]">
 		<div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-			<form class="space-y-6" action="?/register" method="POST">
+			<form class="space-y-6" action="?/register" use:enhance method="POST">
 				<div>
+					{#if $errors.email}
+						<p class="text-red-500 mb-2">{$errors.email}</p>
+					{/if}
 					<label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
 					<div class="mt-2">
 						<input
 							id="email"
+							bind:value={$form.email}
 							name="email"
 							type="email"
 							autocomplete="email"
+							{...$constraints.email}
 							required
 							class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm/6"
 						/>
@@ -34,27 +45,39 @@
 				</div>
 
 				<div>
+					{#if $errors.username}
+						<p class="text-red-500">{$errors.username}></p>
+					{/if}
 					<label for="username" class="block text-sm/6 font-medium text-gray-900">Username</label>
 					<div class="mt-2">
 						<input
 							id="username"
 							name="username"
+							bind:value={$form.username}
 							type="text"
+							{...$constraints.username}
 							required
 							class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm/6"
 						/>
 					</div>
 				</div>
-
+				{#if $errors.password}
+					<p class="text-red-500">{$errors.password}></p>
+				{/if}
 				<div>
 					<label for="password" class="block text-sm/6 font-medium text-gray-900">Password</label>
+					<p class="text-xs text-gray-500">
+						Password must include one lowercase letter, one uppercase letter, one number, one
+						special character
+					</p>
 					<div class="mt-2">
 						<input
 							id="password"
 							name="password"
 							type="password"
+							bind:value={$form.password}
 							autocomplete="current-password"
-							required
+							{...$constraints.password}
 							class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm/6"
 						/>
 					</div>

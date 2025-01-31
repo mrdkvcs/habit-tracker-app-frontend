@@ -11,7 +11,7 @@
 				<a href="#" class="-m-1.5 p-1.5">
 					<span class="sr-only">Your Company</span>
 					<div class="flex items-center gap-2">
-						<h2 class="text-2xl font-bold">Vext</h2>
+						<h2 class="text-2xl font-bold">EaseFlow</h2>
 						<img
 							class="h-55 w-auto"
 							src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"

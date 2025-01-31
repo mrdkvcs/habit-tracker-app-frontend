@@ -20,14 +20,6 @@
 	let description: string = $state('');
 	let errorMessage: string = $state('');
 
-	function addSuggestedFeature() {
-		const suggestedFeature = {
-			title,
-			description,
-			username: 'Suggested Feature'
-		};
-	}
-
 	function getUpVotedFeatures() {
 		let upvotedFeatures = localStorage.getItem('upvotedFeatures');
 		return upvotedFeatures ? JSON.parse(upvotedFeatures) : [];
