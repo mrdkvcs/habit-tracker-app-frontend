@@ -13,26 +13,56 @@ export const actions = {
 			return fail(400, { error: errorMessage.error });
 		}
 		const matchedActivitiesResponse = await response.json();
-		if (matchedActivitiesResponse.matched_activities.length === 1) {
+		if (matchedActivitiesResponse.matched_activities) {
+			if (matchedActivitiesResponse.matched_activities.length === 1) {
+				if (matchedActivitiesResponse.streak_count && matchedActivitiesResponse.is_streak_record) {
+					return {
+						matchedActivitieslength: 1,
+						streakCount: matchedActivitiesResponse.streak_count,
+						isStreakRecord: matchedActivitiesResponse.is_streak_record
+					};
+				}
+				return {
+					matchedActivitieslength: 1
+				};
+			} else if (matchedActivitiesResponse.matched_activities.length > 1) {
+				return {
+					matchedActivitieslength: matchedActivitiesResponse.matched_activities.length,
+					matchedActivitiesResponse
+				};
+			} else {
+				return {
+					matchedActivitieslength: 0,
+					matchedActivitiesResponse
+				};
+			}
+		} else if (matchedActivitiesResponse.activity_logs) {
+			const multipleActivitiesMatch = matchedActivitiesResponse.activity_logs.filter(
+				(activityLog) => activityLog.matched_activities.length > 1
+			);
+			const noActivitiesMatch = matchedActivitiesResponse.activity_logs.filter(
+				(activityLog) => activityLog.matched_activities.length === 0
+			);
 			if (matchedActivitiesResponse.streak_count && matchedActivitiesResponse.is_streak_record) {
 				return {
-					matchedActivitieslength: 1,
+					multipleActivitiesMatch,
+					noActivitiesMatch,
+					multipleLoggedActivities: true,
 					streakCount: matchedActivitiesResponse.streak_count,
 					isStreakRecord: matchedActivitiesResponse.is_streak_record
 				};
+			} else if (matchedActivitiesResponse.streak_count) {
+				return {
+					multipleActivitiesMatch,
+					noActivitiesMatch,
+					multipleLoggedActivities: true,
+					streakCount: matchedActivitiesResponse.streak_count
+				};
 			}
 			return {
-				matchedActivitieslength: 1
-			};
-		} else if (matchedActivitiesResponse.matched_activities.length > 1) {
-			return {
-				matchedActivitieslength: matchedActivitiesResponse.matched_activities.length,
-				matchedActivitiesResponse
-			};
-		} else {
-			return {
-				matchedActivitieslength: 0,
-				matchedActivitiesResponse
+				multipleActivitiesMatch,
+				noActivitiesMatch,
+				multipleLoggedActivities: true
 			};
 		}
 	},

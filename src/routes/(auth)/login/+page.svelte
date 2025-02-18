@@ -10,11 +10,6 @@
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="flex gap-5 items-center justify-center">
 			<h2 class="text-3xl font-bold">EaseFlow</h2>
-			<img
-				class=" h-12 w-auto"
-				src="https://tailwindui.com/plus/img/logos/mark.svg?color=blue&shade=500"
-				alt="Your Company"
-			/>
 		</div>
 		<h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
 			Log in to your account and continue the journey towards greatness!

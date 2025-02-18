@@ -30,10 +30,82 @@
 		return async ({ result, update }) => {
 			await update();
 			if (result.type === 'success') {
-				const { matchedActivitieslength } = result.data;
-				if (matchedActivitieslength === 1) {
-					if (result.data.streakCount === undefined && result.data.isStreakRecord === undefined) {
-						toast.push('Activity set successfully!', {
+				if (result.data.matchedActivitieslength) {
+					if (result.data.matchedActivitieslength === 1) {
+						if (result.data.streakCount === undefined && result.data.isStreakRecord === undefined) {
+							toast.push('Activity set successfully!', {
+								theme: {
+									'--toastColor': 'mintcream',
+									'--toastBackground': 'rgba(72,187,120,0.9)',
+									'--toastBarBackground': '#2F855A'
+								}
+							});
+						}
+						if (result.data.streakCount && result.data.isStreakRecord === true) {
+							toast.push(
+								`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
+								{
+									theme: {
+										'--toastColor': 'mintcream',
+										'--toastBackground': 'rgba(72,187,120,0.9)',
+										'--toastBarBackground': '#2F855A'
+									}
+								}
+							);
+						} else if (result.data.streakCount && result.data.isStreakRecord === false) {
+							toast.push(
+								`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! 🔥`,
+								{
+									theme: {
+										'--toastColor': 'mintcream',
+										'--toastBackground': 'rgba(72,187,120,0.9)',
+										'--toastBarBackground': '#2F855A'
+									}
+								}
+							);
+						}
+					} else if (result.data.matchedActivitieslength > 1) {
+						matchedActivities = result.data.matchedActivitiesResponse;
+						multiplematchedActvitiesDialog?.showModal();
+					} else {
+						matchedActivities = result.data.matchedActivitiesResponse;
+						nomatchedActivitiesDialog?.showModal();
+					}
+				} else if (result.data.multipleLoggedActivities) {
+					const { noActivitiesMatch, multipleActivitiesMatch } = result.data;
+					if (
+						noActivitiesMatch.length === 0 &&
+						multipleActivitiesMatch.length === 0 &&
+						result.data.isStreakRecord &&
+						result.data.streakCount
+					) {
+						toast.push(
+							`Activities set successfully! You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
+							{
+								theme: {
+									'--toastColor': 'mintcream',
+									'--toastBackground': 'rgba(72,187,120,0.9)',
+									'--toastBarBackground': '#2F855A'
+								}
+							}
+						);
+					} else if (
+						noActivitiesMatch.length === 0 &&
+						multipleActivitiesMatch.length === 0 &&
+						result.data.streakCount
+					) {
+						toast.push(
+							`Activities set successfully! You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! `,
+							{
+								theme: {
+									'--toastColor': 'mintcream',
+									'--toastBackground': 'rgba(72,187,120,0.9)',
+									'--toastBarBackground': '#2F855A'
+								}
+							}
+						);
+					} else if (noActivitiesMatch.length === 0 && multipleActivitiesMatch.length === 0) {
+						toast.push(`Activities set successfully! `, {
 							theme: {
 								'--toastColor': 'mintcream',
 								'--toastBackground': 'rgba(72,187,120,0.9)',
@@ -41,38 +113,9 @@
 							}
 						});
 					}
-					if (result.data.streakCount && result.data.isStreakRecord === true) {
-						toast.push(
-							`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! New streak record also set!🔥`,
-							{
-								theme: {
-									'--toastColor': 'mintcream',
-									'--toastBackground': 'rgba(72,187,120,0.9)',
-									'--toastBarBackground': '#2F855A'
-								}
-							}
-						);
-					} else if (result.data.streakCount && result.data.isStreakRecord === false) {
-						toast.push(
-							`You are on a ${result.data.streakCount} ${result.data.streakCount === 1 ? 'day' : 'days'} streak! Keep going! 🔥`,
-							{
-								theme: {
-									'--toastColor': 'mintcream',
-									'--toastBackground': 'rgba(72,187,120,0.9)',
-									'--toastBarBackground': '#2F855A'
-								}
-							}
-						);
-					}
-				} else if (matchedActivitieslength > 1) {
-					matchedActivities = result.data.matchedActivitiesResponse;
-					multiplematchedActvitiesDialog?.showModal();
-				} else {
-					matchedActivities = result.data.matchedActivitiesResponse;
-					nomatchedActivitiesDialog?.showModal();
 				}
 			} else {
-				toast.push(`There was an error setting the activity log: ${result.data.error}`, {
+				toast.push(`There was an error setting the activity logs: ${result.data.error}`, {
 					theme: {
 						'--toastColor': 'white',
 						'--toastBackground': '#FF0000',
