@@ -5,12 +5,16 @@
 	import * as Card from '$lib/components/ui/card';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { superForm } from 'sveltekit-superforms/client';
-	let dialog: HTMLDialogElement | undefined = $state();
+	import { enhance } from '$app/forms';
+
+	let deleteActivityDialog: HTMLDialogElement | undefined = $state();
+	let addActivityDialog: HTMLDialogElement | undefined = $state();
 	let activityNameInput: HTMLInputElement | undefined = $state();
 	let activityPointsInput: HTMLInputElement | undefined = $state();
 	let activityNameInputValue: string | undefined = $state('');
 	let activityPointsInputValue: string | undefined = $state('');
 	let selectedActivityId: string = $state('');
+
 	interface Activity {
 		activity_id: string;
 		name: string;
@@ -76,7 +80,7 @@
 		const logExists = await response.json();
 		if (logExists) {
 			selectedActivityId = activity_id;
-			dialog?.showModal();
+			deleteActivityDialog?.showModal();
 			return;
 		}
 
@@ -111,6 +115,30 @@
 			(activity: Activity) => activity.activity_id !== activity_id
 		);
 	}
+
+	function addActivity() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				const { activityId, activityName, activityPoints, activityType } = result.data;
+				addActivityDialog?.close();
+				toast.push('New activity added successfully!', {
+					theme: {
+						'--toastColor': 'mintcream',
+						'--toastBackground': 'rgba(72,187,120,0.9)',
+						'--toastBarBackground': '#2F855A'
+					}
+				});
+				formedActivities.push({
+					activity_id: activityId,
+					name: activityName,
+					points: activityPoints,
+					type: activityType,
+					optionsopen: false
+				});
+			}
+		};
+	}
 </script>
 
 <Card.Content class="mt-10">
@@ -122,9 +150,9 @@
 		{#if formedActivities.length == 0}
 			<h2 class="text-gray-500 text-center">You currently have no activities set</h2>
 		{/if}
-		{#each formedActivities as activity}
+		{#each [...formedActivities].sort((a, b) => b.points - a.points) as activity}
 			<dialog
-				bind:this={dialog}
+				bind:this={deleteActivityDialog}
 				class="p-10 rounded w-[500px] absolute left-[5%] top-[-5%] transition ease-in-out"
 			>
 				<h2 class="text-lg font-bold">Are you sure you want to delete this activity?</h2>
@@ -136,12 +164,14 @@
 					<button
 						onclick={() => {
 							removeActivity(selectedActivityId);
-							dialog?.close();
+							deleteActivityDialog?.close();
 							selectedActivityId = '';
 						}}
 						class="bg-blue-500 w-[100px] text-white p-1 rounded">Yes</button
 					>
-					<button onclick={() => dialog?.close()} class="text-red-500 bg-none">Cancel</button>
+					<button onclick={() => deleteActivityDialog?.close()} class="text-red-500 bg-none"
+						>Cancel</button
+					>
 				</div>
 			</dialog>
 			<li class="flex justify-between gap-x-4 py-5">
@@ -266,50 +296,59 @@
 			</li>
 		{/each}
 	</ul>
-	<Dialog.Root>
-		<Dialog.Trigger class="bg-blue-500 text-white w-1/6 mt-5 p-2 rounded">New</Dialog.Trigger>
-		<Dialog.Content class="sm:max-w-[425px]">
-			<Dialog.Header>
-				<Dialog.Title>New activity</Dialog.Title>
-				<Dialog.Description>
-					You can set your daily custom activities here , so our app will know about them , and the
-					points associated by them.
-				</Dialog.Description>
-			</Dialog.Header>
-			<form method="POST" action="?/addactivity">
-				{#if $errors.activityName}
-					<p class="text-red-500">{$errors.activityName}</p>
-				{/if}
-				<div class="grid gap-4 py-4">
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="name" class="text-right">Name</Label>
-						<input
-							id="activityName"
-							bind:value={$form.activityName}
-							required
-							name="activityName"
-							class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="username" class="text-right">Points</Label>
-						<input
-							id="activityPoints"
-							name="activityPoints"
-							bind:value={$form.activityPoints}
-							required
-							placeholder="(Max 10 , Min -10)"
-							type="number"
-							max="10"
-							min="-10"
-							class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
+	<Button
+		type="submit"
+		onclick={() => {
+			addActivityDialog?.showModal();
+		}}
+		class=" bg-blue-500 mt-6  text-white p-6 rounded"
+		>New
+	</Button>
+	<dialog bind:this={addActivityDialog} class="p-10 rounded w-[500px] absolute left-[5%] top-[-5%]">
+		<h2 class="text-lg font-bold">New activity</h2>
+		<p class="text-gray-500">
+			You can set your daily custom activities here , so our app will know about them , and the
+			points associated by them.
+		</p>
+		<form method="POST" use:enhance={addActivity} action="?/addActivity">
+			{#if $errors.activityName}
+				<p class="text-red-500">{$errors.activityName}</p>
+			{/if}
+			{#if $errors.activityPoints}
+				<p class="text-red-500 mt-5">{$errors.activityPoints}</p>
+			{/if}
+			<div class="grid gap-4 py-4">
+				<div class="grid grid-cols-4 items-center gap-4">
+					<Label for="name" class="text-right">Name</Label>
+					<input
+						id="activityName"
+						bind:value={$form.activityName}
+						required
+						name="activityName"
+						class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
 				</div>
-				<Button type="submit" class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
-					>Add
-				</Button>
-			</form>
-		</Dialog.Content>
-	</Dialog.Root>
+				<div class="grid grid-cols-4 items-center gap-4">
+					<Label for="username" class="text-right">Points</Label>
+					<input
+						id="activityPoints"
+						name="activityPoints"
+						bind:value={$form.activityPoints}
+						required
+						placeholder="(Max 10 , Min -10)"
+						type="number"
+						max="10"
+						min="-10"
+						class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+				</div>
+			</div>
+			<div class="flex items-center justify-between mt-5">
+				<Button type="submit" class=" bg-blue-500 text-white  p-5 rounded">Add</Button>
+				<button onclick={() => addActivityDialog?.close()} class="text-red-500 bg-none"
+					>Cancel</button
+				>
+			</div>
+		</form>
+	</dialog>
 </Card.Content>

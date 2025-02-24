@@ -56,7 +56,7 @@
 									through email throughout the day if you allow us
 								</Dialog.Description>
 							</Dialog.Header>
-							<form method="POST" action="?/addprodgoal">
+							<form method="POST" use:enhance action="?/addprodgoal">
 								<div class="grid gap-4 py-4">
 									<div class="grid grid-cols-4 items-center gap-4">
 										<Label for="username" class="text-right">Points Goal</Label>

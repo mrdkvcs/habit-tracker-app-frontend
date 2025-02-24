@@ -2,14 +2,14 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { z } from 'zod';
 import { zod } from 'sveltekit-superforms/adapters';
-import { superValidate, setError, message } from 'sveltekit-superforms';
+import { superValidate, setError } from 'sveltekit-superforms';
 
 const schema = z.object({
 	activityName: z.string(),
 	activityPoints: z
 		.number()
-		.min(-10, "Points can't be less than -10")
-		.max(10, "Points can't be more than 10")
+		.min(-10, "Can't set activity points below 10")
+		.max(10, "Can't set activity points above 10")
 });
 interface Activity {
 	activity_id: string;
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions = {
-	addactivity: async (event) => {
+	addActivity: async (event) => {
 		const form = await superValidate(event.request, zod(schema));
 		if (!form.valid) {
 			return fail(400, { form });
@@ -49,7 +49,13 @@ export const actions = {
 			const errorMessage = await response.json();
 			return setError(form, 'activityName', errorMessage.error);
 		}
-		return message(form, 'Activity added successfully');
+		const addedActivity = await response.json();
+		return {
+			activityId: addedActivity.activity_id,
+			activityName: form.data.activityName,
+			activityPoints: form.data.activityPoints,
+			activityType: addedActivity.type
+		};
 	},
 
 	editActivity: async ({ request }) => {
