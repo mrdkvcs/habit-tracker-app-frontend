@@ -38,8 +38,9 @@ export const actions = {
 			const errorMessage = await response.json();
 			return setError(form, 'points', errorMessage.error);
 		}
+		const dailyPoints = await response.json();
 		return {
-			success: 'Productivity goal successfully added'
+			dailyPoints
 		};
 	}
 };

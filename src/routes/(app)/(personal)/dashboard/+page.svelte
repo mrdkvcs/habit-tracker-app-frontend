@@ -4,12 +4,14 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import { Progress } from '$lib/components/ui/progress';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import { enhance } from '$app/forms';
 	import confetti from 'canvas-confetti';
 	import { superForm } from 'sveltekit-superforms';
+	import { toast } from '@zerodevx/svelte-toast';
 	let { data } = $props();
-	const { form } = superForm(data.form);
-	const { user, dailyStats } = data;
+	const { form, errors } = superForm(data.form);
+	const { user, dailyStats } = $state(data);
+	let goalDialog: HTMLDialogElement | undefined = $state();
 	onMount(() => {
 		if (dailyStats.goal_points < dailyStats.total_points && dailyStats.goal_points != 0) {
 			triggerCelebration();
@@ -21,6 +23,24 @@
 			spread: 120,
 			origin: { y: 0.5 }
 		});
+	}
+	function setGoal() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				const { dailyPoints } = result.data;
+				goalDialog?.close();
+				toast.push('Goal set successfully for the day! Good Luck!', {
+					theme: {
+						'--toastColor': 'mintcream',
+						'--toastBackground': 'rgba(72,187,120,0.9)',
+						'--toastBarBackground': '#2F855A'
+					}
+				});
+				dailyStats.goal_points = dailyPoints.goal_points;
+				dailyStats.total_points = dailyPoints.total_points;
+			}
+		};
 	}
 </script>
 
@@ -43,41 +63,52 @@
 			</div>
 			<div class="mt-6 flex space-x-3 md:ml-4 md:mt-0">
 				{#if dailyStats.goal_points == 0}
-					<Dialog.Root>
-						<Dialog.Trigger
-							class="inline-flex items-center rounded-md bg-white-500 px-10 py-3 text-sm font-semibold text-blue-500 shadow-sm border border-gray-300  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
-							>Set goal for today</Dialog.Trigger
-						>
-						<Dialog.Content class="sm:max-w-[425px]">
-							<Dialog.Header>
-								<Dialog.Title>Set productivity goal</Dialog.Title>
-								<Dialog.Description
-									>You can set your productivity goal for today here , and we will encourage you
-									through email throughout the day if you allow us
-								</Dialog.Description>
-							</Dialog.Header>
-							<form method="POST" use:enhance action="?/addprodgoal">
-								<div class="grid gap-4 py-4">
-									<div class="grid grid-cols-4 items-center gap-4">
-										<Label for="username" class="text-right">Points Goal</Label>
-										<input
-											id="points"
-											name="points"
-											required
-											placeholder="(Min 30)"
-											bind:value={$form.points}
-											type="number"
-											min="30"
-											class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-										/>
-									</div>
+					<button
+						onclick={() => goalDialog?.showModal()}
+						class="inline-flex items-center rounded-md bg-white-500 px-10 py-3 text-sm font-semibold text-blue-500 shadow-sm border border-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+						>Set goal for today</button
+					>
+					<dialog
+						bind:this={goalDialog}
+						class="p-10 rounded w-[500px] absolute left-[40%] top-[-5%]"
+					>
+						<h2 class="font-bold text-xl">Set productivity goal</h2>
+						<p class="text-gray-500 mt-2">
+							You can set your productivity goal for today here , and we will encourage you through
+							email throughout the day if you allow us
+						</p>
+						{#if $errors.points}
+							<p class="text-red-500 mt-2">{$errors.points}</p>
+						{/if}
+						<form method="POST" use:enhance={setGoal} action="?/addprodgoal">
+							<div class="grid gap-4 py-4">
+								<div class="grid grid-cols-4 items-center gap-4">
+									<Label for="username" class="text-right">Points Goal</Label>
+									<input
+										id="points"
+										name="points"
+										required
+										placeholder="(Min 30)"
+										bind:value={$form.points}
+										type="number"
+										min="30"
+										class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+									/>
 								</div>
-								<Button type="submit" class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded">
-									Set goal</Button
-								>
-							</form>
-						</Dialog.Content>
-					</Dialog.Root>
+							</div>
+							<Button type="submit" class=" bg-blue-500 float-left text-white  mt-5 p-2 rounded">
+								Set goal</Button
+							>
+						</form>
+						<button
+							onclick={() => {
+								goalDialog?.close();
+								$form.points = 0;
+								$errors.points = '';
+							}}
+							class="text-red-500 absolute bottom-10 right-5 bg-none">Cancel</button
+						>
+					</dialog>
 				{/if}
 				<a href="/activity/create">
 					<button

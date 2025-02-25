@@ -74,7 +74,9 @@ export const actions = {
 			};
 		}
 		return {
-			success: 'Activity edited successfully'
+			activity_name,
+			activity_points,
+			activity_id
 		};
 	}
 };

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card';
 	import { toast } from '@zerodevx/svelte-toast';
 	import { superForm } from 'sveltekit-superforms/client';
@@ -9,6 +8,7 @@
 
 	let deleteActivityDialog: HTMLDialogElement | undefined = $state();
 	let addActivityDialog: HTMLDialogElement | undefined = $state();
+	let editActivityDialog: HTMLDialogElement | undefined = $state();
 	let activityNameInput: HTMLInputElement | undefined = $state();
 	let activityPointsInput: HTMLInputElement | undefined = $state();
 	let activityNameInputValue: string | undefined = $state('');
@@ -22,10 +22,11 @@
 		type: string;
 		optionsopen: boolean;
 	}
+
 	let { data } = $props();
 
 	let { formedActivities, token } = $state(data);
-	let { form, errors, message } = superForm(data.form);
+	const { form, errors, message } = superForm(data.form);
 
 	function setInputValues() {
 		activityNameInputValue = activityNameInput?.value;
@@ -139,6 +140,34 @@
 			}
 		};
 	}
+
+	function editActivity() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				const { activity_name, activity_points, activity_id } = result.data;
+				formedActivities = formedActivities.map((activity: Activity) => {
+					if (activity.activity_id === activity_id) {
+						return {
+							activity_id,
+							points: activity_points,
+							name: activity_name,
+							type: 'custom',
+							optionsopen: false
+						};
+					}
+					return activity;
+				});
+				toast.push('Activity edited successfully!', {
+					theme: {
+						'--toastColor': 'mintcream',
+						'--toastBackground': 'rgba(72,187,120,0.9)',
+						'--toastBarBackground': '#2F855A'
+					}
+				});
+			}
+		};
+	}
 </script>
 
 <Card.Content class="mt-10">
@@ -235,56 +264,64 @@
 								aria-labelledby="options-menu-0-button"
 								tabindex="-1"
 							>
-								<Dialog.Root>
-									<Dialog.Trigger onclick={setInputValues} class="bg-none ml-3 text-blue-500"
-										>Edit</Dialog.Trigger
-									>
-									<Dialog.Content class="sm:max-w-[425px]">
-										<Dialog.Header>
-											<Dialog.Title>Edit activity</Dialog.Title>
-										</Dialog.Header>
-										<form method="POST" action="?/editActivity">
-											<div class="grid gap-4 py-4">
-												<div class="grid grid-cols-4 items-center gap-4">
-													<Label for="name" class="text-right">Name</Label>
-													<input
-														value={activity.name}
-														oninput={setActivityName}
-														id="activityname"
-														bind:this={activityNameInput}
-														required
-														name="activityname"
-														class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-													/>
-												</div>
-												<div class="grid grid-cols-4 items-center gap-4">
-													<Label for="username" class="text-right">Points</Label>
-													<input
-														id="activitypoints"
-														name="activitypoints"
-														required
-														placeholder="(Max 10 , Min -10)"
-														value={activity.points}
-														oninput={setActivityPoints}
-														bind:this={activityPointsInput}
-														type="number"
-														max="10"
-														min="-10"
-														class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-													/>
-												</div>
+								<button
+									onclick={() => {
+										editActivityDialog?.showModal();
+										setInputValues();
+									}}
+									class="bg-white ml-3 text-blue-500 text-md"
+									>Edit
+								</button>
+								<dialog
+									bind:this={editActivityDialog}
+									class="p-10 rounded w-[500px] absolute left-[5%] top-[-5%]"
+								>
+									<h2 class="text-lg font-bold">Edit activity</h2>
+									<form method="POST" use:enhance={editActivity} action="?/editActivity">
+										<div class="grid gap-4 py-4">
+											<div class="grid grid-cols-4 items-center gap-4">
+												<Label for="name" class="text-right">Name</Label>
+												<input
+													id="activityname"
+													value={activity.name}
+													bind:this={activityNameInput}
+													oninput={setActivityName}
+													required
+													name="activityname"
+													class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+												/>
 											</div>
-											<input type="hidden" value={activity.activity_id} name="activityid" />
-											<Button
-												disabled={activityNameInputValue === activity.name &&
-													+activityPointsInputValue === activity.points}
-												type="submit"
-												class=" bg-blue-500 float-right text-white  mt-5 p-2 rounded"
-												>Edit
-											</Button>
-										</form>
-									</Dialog.Content>
-								</Dialog.Root>
+											<div class="grid grid-cols-4 items-center gap-4">
+												<Label for="username" class="text-right">Points</Label>
+												<input
+													id="activitypoints"
+													name="activitypoints"
+													value={activity.points}
+													oninput={setActivityPoints}
+													bind:this={activityPointsInput}
+													required
+													placeholder="(Max 10 , Min -10)"
+													type="number"
+													max="10"
+													min="-10"
+													class="col-span-3 rounded border p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+												/>
+											</div>
+										</div>
+										<input type="hidden" value={activity.activity_id} name="activityid" />
+										<Button
+											disabled={activityNameInputValue === activity.name &&
+												+activityPointsInputValue === activity.points}
+											type="submit"
+											class=" bg-blue-500 text-white p-2 rounded"
+											>Edit
+										</Button>
+									</form>
+									<button
+										onclick={() => editActivityDialog?.close()}
+										class="text-red-500 absolute bottom-10 right-5 bg-none">Cancel</button
+									>
+								</dialog>
 								<button
 									onclick={() => checkActivityLogExists(activity.activity_id)}
 									class="block px-3 py-1 text-sm/6 text-red-500">Remove</button
@@ -297,7 +334,6 @@
 		{/each}
 	</ul>
 	<Button
-		type="submit"
 		onclick={() => {
 			addActivityDialog?.showModal();
 		}}
@@ -345,8 +381,11 @@
 			</div>
 			<div class="flex items-center justify-between mt-5">
 				<Button type="submit" class=" bg-blue-500 text-white  p-5 rounded">Add</Button>
-				<button onclick={() => addActivityDialog?.close()} class="text-red-500 bg-none"
-					>Cancel</button
+				<button
+					onclick={() => {
+						addActivityDialog?.close();
+					}}
+					class="text-red-500 bg-none">Cancel</button
 				>
 			</div>
 		</form>
